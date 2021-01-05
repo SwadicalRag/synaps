@@ -1,0 +1,8 @@
+builders:
+  synaps_generator:
+    import: "package:synaps_generator/synaps_generator.dart"
+    builder_factories: ["synapsGeneratorBuilder"]
+    auto_apply: dependents
+    build_extensions: {".dart": [".synaps.g.part"]}
+    build_to: cache
+    applies_builders: ["source_gen|combining_builder"]
