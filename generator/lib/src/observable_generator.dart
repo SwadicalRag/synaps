@@ -41,9 +41,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
           : "";
 
       buffer.write("class ${className}${templateDeclarations} ");
-      if(element.supertype != null) {
-        buffer.write("extends ${element.supertype.getDisplayString(withNullability: false)} ");
-      }
+      buffer.write("extends ${parentClassName}${templates} ");
       if(element.mixins.isNotEmpty) {
         final mixinList = element.mixins.map((mxn) => mxn.getDisplayString(withNullability: false)).join(",");
 
@@ -52,7 +50,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
       else {
         buffer.write("with ControllerInterface ");
       }
-      buffer.writeln("implements ${parentClassName}${templates} {");
+      buffer.writeln("{");
       buffer.writeln("final ${parentClassName}${templates} _internal;");
 
       final copyOnInitialise = <String,String>{};
@@ -72,7 +70,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
         if(fieldAnnotations.containsKey(Observable)) {
           final annotation = fieldAnnotations[Observable];
 
-          if(field.type.isDartCoreList) {
+          if(field.type.isDartCoreList || field.type.isDartCoreSet) {
             final proxyName = "_proxy_${field.name}";
             final typeString = field.type.getDisplayString(withNullability: false);
             final proxyTypeString = "Synaps" + typeString;
@@ -207,7 +205,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
 
         buffer.writeln("@override");
         buffer.writeln("${returnTypeString} ${method.name}${functionTemplates}(${argListDeclarations}) {");
-        buffer.writeln("return _internal.${method.name}${functionTemplates}(${argList});");
+        buffer.writeln("return super.${method.name}${functionTemplates}(${argList});");
         buffer.writeln("}");
       }
 
