@@ -1,5 +1,6 @@
 import "package:synaps/synaps.dart";
 import "package:synaps_test/samples/hello.dart";
+import "package:synaps_test/samples/list.dart";
 import "package:test/test.dart";
 
 void main() {
@@ -150,6 +151,92 @@ void main() {
       });
 
       expect(didUpdate,equals(0));
+    });
+  });
+
+
+  group("ListController", () {
+    setUp(() {
+
+    });
+
+    test(".monitor() should notify on index changes", () {
+      final listTest = ListTest().ctx();
+
+      var didUpdate = false;
+      SynapsMasterController.monitor(
+        monitor: () {
+          var stub = listTest.numberwang[0];
+        },
+        onUpdate: () {
+          didUpdate = true;
+        }
+      );
+
+      listTest.numberwang[0] = 23;
+
+      expect(didUpdate,equals(true));
+    });
+
+    test(".monitor() should not notify on unrelated index changes", () {
+      final listTest = ListTest().ctx();
+
+      var didUpdate = false;
+      SynapsMasterController.monitor(
+        monitor: () {
+          var stub = listTest.numberwang[0];
+        },
+        onUpdate: () {
+          didUpdate = true;
+        }
+      );
+
+      listTest.numberwang[1] = 37;
+
+      // (by the way, that's numberwang)
+
+      expect(didUpdate,equals(false));
+    });
+
+    test(".monitor() should notify on .add()/etc.", () {
+      final listTest = ListTest().ctx();
+
+      var didUpdate = 0;
+      SynapsMasterController.monitor(
+        monitor: () {
+          // now, I'm told that I'm not allowed to reveal the secret numberwang formula in a public
+          // repository, so this placeholder numberwang will have to do.
+          // To the person who is reading this, I am sorry.
+          var isNumberwang = false;
+
+          var out = 0;
+          listTest.numberwang.forEach((element) {
+            out = out + element;
+          });
+
+          isNumberwang = out == 42;
+        },
+        onUpdate: () {
+          didUpdate++;
+        }
+      );
+
+      expect(didUpdate,equals(0));
+
+      // NUMBERWAANG!!!!!
+      listTest.numberwang[1] = 37;
+
+      expect(didUpdate,equals(1));
+
+      listTest.numberwang[1] = 21;
+
+      expect(didUpdate,equals(2));
+
+      // add new index
+      listTest.numberwang.add(16);
+      // (and yes, yes, yes, that indeed... is NUMBERWANG!)
+
+      expect(didUpdate,equals(3));
     });
   });
 }

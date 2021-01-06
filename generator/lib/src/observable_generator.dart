@@ -53,9 +53,10 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
         buffer.write("with ControllerInterface ");
       }
       buffer.writeln("implements ${parentClassName}${templates} {");
-
       buffer.writeln("final ${parentClassName}${templates} _internal;");
-      buffer.writeln("${className}(this._internal);");
+
+      final copyOnInitialise = <String,String>{};
+      final copyOnInitialiseType = <String,String>{};
 
       void forwardField(FieldElement field) {
         final fieldAnnotations = getFieldAnnotations(field);
@@ -71,19 +72,42 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
         if(fieldAnnotations.containsKey(Observable)) {
           final annotation = fieldAnnotations[Observable];
 
-          final typeString = field.type.getDisplayString(withNullability: false);
+          if(field.type.isDartCoreList) {
+            final proxyName = "_proxy_${field.name}";
+            final typeString = field.type.getDisplayString(withNullability: false);
+            final proxyTypeString = "Synaps" + typeString;
 
-          buffer.writeln("@override");
-          buffer.writeln("${typeString} get ${field.name} {");
-          buffer.writeln("synapsMarkVariableRead(#${field.name});");
-          buffer.writeln("return _internal.${field.name};");
-          buffer.writeln("}");
+            copyOnInitialise[field.name] = proxyName;
+            copyOnInitialiseType[field.name] = proxyTypeString;
 
-          buffer.writeln("@override");
-          buffer.writeln("set ${field.name}(${typeString} value) {");
-          buffer.writeln("_internal.${field.name} = value;");
-          buffer.writeln("synapsMarkVariableDirty(#${field.name},value);");
-          buffer.writeln("}");
+            buffer.writeln("${proxyTypeString} ${proxyName};");
+            buffer.writeln("@override");
+            buffer.writeln("${proxyTypeString} get ${field.name} {");
+            buffer.writeln("synapsMarkVariableRead(#${field.name});");
+            buffer.writeln("return ${proxyName};");
+            buffer.writeln("}");
+
+            buffer.writeln("@override");
+            buffer.writeln("set ${field.name}(${typeString} value) {");
+            buffer.writeln("_internal.${field.name} = value;");
+            buffer.writeln("synapsMarkVariableDirty(#${field.name},value);");
+            buffer.writeln("}");
+          }
+          else {
+            final typeString = field.type.getDisplayString(withNullability: false);
+
+            buffer.writeln("@override");
+            buffer.writeln("${typeString} get ${field.name} {");
+            buffer.writeln("synapsMarkVariableRead(#${field.name});");
+            buffer.writeln("return _internal.${field.name};");
+            buffer.writeln("}");
+
+            buffer.writeln("@override");
+            buffer.writeln("set ${field.name}(${typeString} value) {");
+            buffer.writeln("_internal.${field.name} = value;");
+            buffer.writeln("synapsMarkVariableDirty(#${field.name},value);");
+            buffer.writeln("}");
+          }
         }
         else {
           final typeString = field.type.getDisplayString(withNullability: false);
@@ -195,6 +219,21 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
 
       for (final method in element.methods) {
         forwardMethod(method);
+      }
+
+      buffer.write("${className}(this._internal)");
+      if(copyOnInitialise.isNotEmpty) {
+        buffer.writeln(" {");
+        for(final fromVarName in copyOnInitialise.keys) {
+          final toVarName = copyOnInitialise[fromVarName];
+          final toVarType = copyOnInitialiseType[fromVarName];
+
+          buffer.writeln("${toVarName} = ${toVarType}(_internal.${fromVarName});");
+        }
+        buffer.writeln("}");
+      }
+      else {
+        buffer.writeln(";");
       }
 
       buffer.writeln("}");
