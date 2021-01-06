@@ -1,4 +1,10 @@
-# synaps
+# 💥 synaps 💊
+
+![](https://forthebadge.com/images/badges/uses-brains.svg)
+![](https://forthebadge.com/images/badges/powered-by-black-magic.svg)
+![](https://forthebadge.com/images/badges/built-with-swag.svg)
+
+[![travis ci](https://travis-ci.com/SwadicalRag/synaps.svg?branch=main)](https://travis-ci.com/SwadicalRag/synaps)
 
 synaps is simple library that aims to provide tools to create observable class fields with syntactic sugar.
 
