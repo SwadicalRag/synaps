@@ -12,6 +12,26 @@ typedef void SynapsRunOnceListenerFunction();
 /// Additionally, null values, when assigned to maps (which are 
 /// used extensively in synaps), will not iterate correctly.
 class SynapsOracle {
+  /// This value is passed in as `newValue` whenever `newValue == null`. 
+  /// 
+  /// This is because null values, when assigned to
+  /// maps (which are used extensively in synaps), will not iterate correctly.
+  static SynapsOracle get NULL => ControllerInterface.NULL_ORACLE;
+
+  /// This value is passed in as `newValue` for `controller.length` 
+  /// 
+  /// This is because some special controllers like sets/maps can use
+  /// Symbols as their keys/values, and can lead to ambiguity when
+  /// using the Listener API
+  static SynapsOracle get LENGTH => ControllerInterface.LENGTH_ORACLE;
+
+  /// This value is passed in as `newValue` for `controller.keys` 
+  /// 
+  /// This is because some special controllers like sets/maps can use
+  /// Symbols as their keys/values, and can lead to ambiguity when
+  /// using the Listener API
+  static SynapsOracle get KEYS => ControllerInterface.KEYS_ORACLE;
+
   /// True if this oracle represents the `null` value
   bool get isNull => identical(this,ControllerInterface.NULL_ORACLE);
 
@@ -27,24 +47,8 @@ class _LENGTH_ORACLE extends SynapsOracle {}
 class _KEYS_ORACLE extends SynapsOracle {}
 
 class ControllerInterface {
-  /// This value is passed in as `newValue` whenever `newValue == null`. 
-  /// 
-  /// This is because null values, when assigned to
-  /// maps (which are used extensively in synaps), will not iterate correctly.
   static final NULL_ORACLE = _NULL_ORACLE();
-
-  /// This value is passed in as `newValue` for `controller.length` 
-  /// 
-  /// This is because some special controllers like sets/maps can use
-  /// Symbols as their keys/values, and can lead to ambiguity when
-  /// using the Listener API
   static final LENGTH_ORACLE = _LENGTH_ORACLE();
-  
-  /// This value is passed in as `newValue` for `controller.keys` 
-  /// 
-  /// This is because some special controllers like sets/maps can use
-  /// Symbols as their keys/values, and can lead to ambiguity when
-  /// using the Listener API
   static final KEYS_ORACLE = _KEYS_ORACLE();
 
   final Map<dynamic,dynamic> _dirtySymbols = {};
