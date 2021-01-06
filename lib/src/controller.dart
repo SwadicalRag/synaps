@@ -54,6 +54,10 @@ class ControllerInterface {
     }
 
     _symbolListeners[symbol].remove(listener);
+
+    if(_symbolListeners[symbol].isEmpty) {
+      _symbolListeners.remove(symbol);
+    }
   }
 
   void synapsAddRunOnceListener(dynamic symbol,SynapsRunOnceListenerFunction listener) {
@@ -70,6 +74,10 @@ class ControllerInterface {
     }
 
     _symbolRunOnceListeners[symbol].remove(listener);
+
+    if(_symbolRunOnceListeners[symbol].isEmpty) {
+      _symbolRunOnceListeners.remove(symbol);
+    }
   }
 
   void synapsEmitListeners() {
