@@ -1,5 +1,14 @@
+import "package:synaps/synaps.dart";
+
 part "hello.g.dart";
 
+@Controller()
 class Hello {
-  String world = "Hello World!";
+  @Observable()
+  String world;
+  
+  @Observable()
+  String universe;
+
+  String imNormal = "i can't be observed";
 }

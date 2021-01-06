@@ -9,6 +9,8 @@ environment:
 dependencies:
   source_gen: ^0.9.10+1
   build: '1.6.0'
+  synaps:
+    path: ../
 
 dev_dependencies:
   
