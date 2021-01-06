@@ -51,4 +51,4 @@ windows/flutter/generated_plugin_registrant.h
 windows/flutter/generated_plugins.cmake
 
 # Generated code
-*.g.dart
+!*.g.dart
