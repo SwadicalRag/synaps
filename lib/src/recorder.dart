@@ -44,6 +44,10 @@ class MonitorState {
   final Map<ControllerInterface,Map<dynamic,Set<SynapsListenerFunction>>> _listeners = {};
   final Map<ControllerInterface,Map<dynamic,Set<SynapsRunOnceListenerFunction>>> _runOnceListeners = {};
 
+  /// Set to true when this MonitorState attaches a listener for the first time,
+  /// and does not change afterwards at all.
+  bool hasCapturedSymbols = false;
+
   /// Adds a listener to an interface
   /// 
   /// ```
@@ -61,6 +65,7 @@ class MonitorState {
 
     _listeners[interface][symbol].add(listener);
     interface.synapsAddListener(symbol, listener);
+    hasCapturedSymbols = true;
   }
 
 
@@ -117,6 +122,7 @@ class MonitorState {
 
     _runOnceListeners[interface][symbol].add(listener);
     interface.synapsAddRunOnceListener(symbol, listener);
+    hasCapturedSymbols = true;
   }
 
 
