@@ -4,9 +4,9 @@ synaps is simple library that aims to provide tools to create observable class f
 
 This library was built to work as the backend for a state management library for Flutter.
 
-On its own, synapse does not depend on Flutter and is completely separate from any framework. Its only major dependencies are `build_runner` and `source_gen`
+On its own, synaps does not depend on Flutter and is completely separate from any framework. Its only major dependencies are `build_runner` and `source_gen`
 
-If you want to use this as a state management solution for UIs, perhaps you should look at `synapse_flutter` instead (TODO). It should have
+If you want to use this as a state management solution for UIs, perhaps you should look at `synaps_flutter` instead (TODO). It should have
 the methods you need, but neatly packed into widgets and helper functions.
 
 ## Why?
@@ -109,7 +109,7 @@ Let's assume that UI code is completely separate from application code, and ask 
 
 Synaps is designed to enable "glue" code to record whatever fields you access out of a listenable class, and then use that information to listen to whenever those fields get modified by *any* Dart code.
 
-This means that a pre-written class with a bunch of fields, can be instantly used in UI (with the help of some higher level abstractions e.g. `synapse_flutter`).
+This means that a pre-written class with a bunch of fields, can be instantly used in UI (with the help of some higher level abstractions e.g. `synaps_flutter`).
 
 ## Usage
 
