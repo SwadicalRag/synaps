@@ -88,19 +88,23 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
             copyOnInitialise[field.name] = proxyName;
             copyOnInitialiseType[field.name] = proxyTypeString;
 
-            buffer.writeln("${proxyTypeString} ${proxyName};");
-            buffer.writeln("@override");
-            buffer.writeln("${proxyTypeString} get ${field.name} {");
-            buffer.writeln("synapsMarkVariableRead(#${field.name});");
-            buffer.writeln("return ${proxyName};");
-            buffer.writeln("}");
+            if(field.getter != null) {
+              buffer.writeln("${proxyTypeString} ${proxyName};");
+              buffer.writeln("@override");
+              buffer.writeln("${proxyTypeString} get ${field.name} {");
+              buffer.writeln("synapsMarkVariableRead(#${field.name});");
+              buffer.writeln("return ${proxyName};");
+              buffer.writeln("}");
+            }
 
-            buffer.writeln("@override");
-            buffer.writeln("set ${field.name}(${typeString} value) {");
-            buffer.writeln("${proxyName} = ${proxyTypeString}(value);");
-            buffer.writeln("_internal.${field.name} = value;");
-            buffer.writeln("synapsMarkVariableDirty(#${field.name},value);");
-            buffer.writeln("}");
+            if(!field.isFinal) {
+              buffer.writeln("@override");
+              buffer.writeln("set ${field.name}(${typeString} value) {");
+              buffer.writeln("${proxyName} = ${proxyTypeString}(value);");
+              buffer.writeln("_internal.${field.name} = value;");
+              buffer.writeln("synapsMarkVariableDirty(#${field.name},value);");
+              buffer.writeln("}");
+            }
           }
           else if(_isControllerClass(field.type)) {
             final proxyName = "_proxy_${field.name}";
@@ -108,48 +112,60 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
 
             activateCtxOnInitialise[field.name] = proxyName;
 
-            buffer.writeln("${typeString} ${proxyName};");
-            buffer.writeln("@override");
-            buffer.writeln("${typeString} get ${field.name} {");
-            buffer.writeln("synapsMarkVariableRead(#${field.name});");
-            buffer.writeln("return ${proxyName};");
-            buffer.writeln("}");
+            if(field.getter != null) {
+              buffer.writeln("${typeString} ${proxyName};");
+              buffer.writeln("@override");
+              buffer.writeln("${typeString} get ${field.name} {");
+              buffer.writeln("synapsMarkVariableRead(#${field.name});");
+              buffer.writeln("return ${proxyName};");
+              buffer.writeln("}");
+            }
 
-            buffer.writeln("@override");
-            buffer.writeln("set ${field.name}(${typeString} value) {");
-            buffer.writeln("${proxyName} = value.ctx();");
-            buffer.writeln("_internal.${field.name} = value;");
-            buffer.writeln("synapsMarkVariableDirty(#${field.name},value);");
-            buffer.writeln("}");
+            if(!field.isFinal) {
+              buffer.writeln("@override");
+              buffer.writeln("set ${field.name}(${typeString} value) {");
+              buffer.writeln("${proxyName} = value.ctx();");
+              buffer.writeln("_internal.${field.name} = value;");
+              buffer.writeln("synapsMarkVariableDirty(#${field.name},value);");
+              buffer.writeln("}");
+            }
           }
           else {
             final typeString = field.type.getDisplayString(withNullability: false);
 
-            buffer.writeln("@override");
-            buffer.writeln("${typeString} get ${field.name} {");
-            buffer.writeln("synapsMarkVariableRead(#${field.name});");
-            buffer.writeln("return _internal.${field.name};");
-            buffer.writeln("}");
+            if(field.getter != null) {
+              buffer.writeln("@override");
+              buffer.writeln("${typeString} get ${field.name} {");
+              buffer.writeln("synapsMarkVariableRead(#${field.name});");
+              buffer.writeln("return _internal.${field.name};");
+              buffer.writeln("}");
+            }
 
-            buffer.writeln("@override");
-            buffer.writeln("set ${field.name}(${typeString} value) {");
-            buffer.writeln("_internal.${field.name} = value;");
-            buffer.writeln("synapsMarkVariableDirty(#${field.name},value);");
-            buffer.writeln("}");
+            if(!field.isFinal) {
+              buffer.writeln("@override");
+              buffer.writeln("set ${field.name}(${typeString} value) {");
+              buffer.writeln("_internal.${field.name} = value;");
+              buffer.writeln("synapsMarkVariableDirty(#${field.name},value);");
+              buffer.writeln("}");
+            }
           }
         }
         else {
           final typeString = field.type.getDisplayString(withNullability: false);
 
-          buffer.writeln("@override");
-          buffer.writeln("${typeString} get ${field.name} {");
-          buffer.writeln("return _internal.${field.name};");
-          buffer.writeln("}");
+          if(field.getter != null) {
+            buffer.writeln("@override");
+            buffer.writeln("${typeString} get ${field.name} {");
+            buffer.writeln("return _internal.${field.name};");
+            buffer.writeln("}");
+          }
 
-          buffer.writeln("@override");
-          buffer.writeln("set ${field.name}(${typeString} value) {");
-          buffer.writeln("_internal.${field.name} = value;");
-          buffer.writeln("}");
+          if(!field.isFinal) {
+            buffer.writeln("@override");
+            buffer.writeln("set ${field.name}(${typeString} value) {");
+            buffer.writeln("_internal.${field.name} = value;");
+            buffer.writeln("}");
+          }
         }
       }
 
@@ -242,6 +258,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
 
       for (final field in element.fields) {
         if (field.name.startsWith("_")) {continue;}
+        if (field.isStatic) {continue;}
 
         forwardField(field);
       }
