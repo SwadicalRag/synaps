@@ -2,7 +2,7 @@ import 'package:synaps/src/controller.dart';
 
 typedef void SynapsTransactionFunction();
 typedef void SynapsMonitorFunction();
-typedef void SynapsMonitorGranularCallbackFunction(Symbol symbol,dynamic newValue);
+typedef void SynapsMonitorGranularCallbackFunction(dynamic symbol,dynamic newValue);
 typedef void SynapsMonitorCallbackFunction();
 
 /// what to do when a variable is read from
@@ -15,7 +15,7 @@ enum SynapsRecorderMode {
 }
 
 class SynapsRecorderState {
-  final internalState = <Symbol,ControllerInterface>{};
+  final internalState = <dynamic,ControllerInterface>{};
   SynapsRecorderMode mode = SynapsRecorderMode.VOID;
 }
 
@@ -32,7 +32,7 @@ enum SynapsPlaybackMode {
 }
 
 class SynapsPlaybackState {
-  final internalState = <Symbol,ControllerInterface>{};
+  final internalState = <dynamic,ControllerInterface>{};
   SynapsPlaybackMode mode = SynapsPlaybackMode.LIVE;
 }
 
@@ -89,7 +89,7 @@ class SynapsMasterController {
   /// 
   /// Used by [ControllerInterface] to save variable reads to the current
   /// recorder state
-  static void recordVariableRead(Symbol symbol,ControllerInterface interface) {
+  static void recordVariableRead(dynamic symbol,ControllerInterface interface) {
     if(isRecording) {
       _recorderState.internalState[symbol] = interface;
     }
@@ -143,7 +143,7 @@ class SynapsMasterController {
   /// Used by [ControllerInterface] to save variable writes to the current
   /// playback state
   /// 
-  static void recordVariableWrite(Symbol symbol,ControllerInterface interface) {
+  static void recordVariableWrite(dynamic symbol,ControllerInterface interface) {
     _playbackState.internalState[symbol] = interface;
     if(isLive) {
       doPlayback();

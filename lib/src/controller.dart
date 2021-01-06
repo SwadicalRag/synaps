@@ -6,16 +6,16 @@ typedef void SynapsSingleListenerFunction();
 class ControllerInterface {
   // Define any methods the controller should implement here
 
-  final Map<Symbol,dynamic> _dirtySymbols = {};
-  final Map<Symbol,Set<SynapsListenerFunction>> _symbolListeners = {};
-  final Map<Symbol,Set<SynapsSingleListenerFunction>> _symbolSingleListeners = {};
+  final Map<dynamic,dynamic> _dirtySymbols = {};
+  final Map<dynamic,Set<SynapsListenerFunction>> _symbolListeners = {};
+  final Map<dynamic,Set<SynapsSingleListenerFunction>> _symbolSingleListeners = {};
   bool _isEmitting = false;
 
-  void synapsMarkVariableRead(Symbol symbol) {
+  void synapsMarkVariableRead(dynamic symbol) {
     SynapsMasterController.recordVariableRead(symbol, this);
   }
 
-  void synapsMarkVariableDirty(Symbol symbol,dynamic newValue) {
+  void synapsMarkVariableDirty(dynamic symbol,dynamic newValue) {
     if(_isEmitting) {
       // If we reached here, then a variable was modified inside
       // a listener. This is not good. Therefore we'll ignore it.
@@ -30,7 +30,7 @@ class ControllerInterface {
     SynapsMasterController.recordVariableWrite(symbol, this);
   }
 
-  void synapsAddListener<T>(Symbol symbol,SynapsListenerFunction<T> listener) {
+  void synapsAddListener<T>(dynamic symbol,SynapsListenerFunction<T> listener) {
     if(!_symbolListeners.containsKey(symbol)) {
       _symbolListeners[symbol] = {};
     }
@@ -38,7 +38,7 @@ class ControllerInterface {
     _symbolListeners[symbol].add(listener);
   }
 
-  void synapsAddSingleListener(Symbol symbol,SynapsSingleListenerFunction listener) {
+  void synapsAddSingleListener(dynamic symbol,SynapsSingleListenerFunction listener) {
     if(!_symbolSingleListeners.containsKey(symbol)) {
       _symbolSingleListeners[symbol] = {};
     }
