@@ -155,6 +155,28 @@ void main() {
 
       expect(didUpdate,equals(0));
     });
+
+    test(".monitor() should not trigger onUpdate after MonitorState.dispose()", () {
+      final hello = Hello().ctx();
+
+      var didUpdate = 0;
+      final monitorState = SynapsMasterController.monitor(
+        monitor: () {
+          var stub = hello.world;
+          var stub2 = hello.universe;
+        },
+        onUpdate: () {
+          didUpdate++;
+        }
+      );
+
+      hello.world = "Big";
+      monitorState.dispose();
+      hello.world = "Chungus";
+      hello.universe = "Ultra";
+
+      expect(didUpdate,equals(1));
+    });
   });
 
 

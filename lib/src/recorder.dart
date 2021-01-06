@@ -36,6 +36,90 @@ class SynapsPlaybackState {
   SynapsPlaybackMode mode = SynapsPlaybackMode.LIVE;
 }
 
+class _MonitorState {
+  final Map<ControllerInterface,Map<dynamic,Set<SynapsListenerFunction>>> _listeners = {};
+  final Map<ControllerInterface,Map<dynamic,Set<SynapsSingleListenerFunction>>> _singleListeners = {};
+
+  void addListener<T>(ControllerInterface interface,dynamic symbol,SynapsListenerFunction<T> listener) {
+    if(!_listeners.containsKey(interface)) {
+      _listeners[interface] = {};
+    }
+    if(!_listeners[interface].containsKey(symbol)) {
+      _listeners[interface][symbol] = {};
+    }
+
+    _listeners[interface][symbol].add(listener);
+    interface.synapsAddListener(symbol, listener);
+  }
+
+  void removeListener<T>(ControllerInterface interface,dynamic symbol,SynapsListenerFunction<T> listener) {
+    if(_listeners.containsKey(interface)) {
+      if(_listeners[interface].containsKey(symbol)) {
+        _listeners[interface][symbol].remove(listener);
+      }
+    }
+
+    interface.synapsRemoveListener(symbol, listener);
+  }
+
+  void addSingleListener(ControllerInterface interface,dynamic symbol,SynapsSingleListenerFunction listener) {
+    if(!_singleListeners.containsKey(interface)) {
+      _singleListeners[interface] = {};
+    }
+    if(!_singleListeners[interface].containsKey(symbol)) {
+      _singleListeners[interface][symbol] = {};
+    }
+
+    _singleListeners[interface][symbol].add(listener);
+    interface.synapsAddSingleListener(symbol, listener);
+  }
+
+  void removeSingleListener(ControllerInterface interface,dynamic symbol,SynapsSingleListenerFunction listener) {
+    if(_singleListeners.containsKey(interface)) {
+      if(_singleListeners[interface].containsKey(symbol)) {
+        _singleListeners[interface][symbol].remove(listener);
+      }
+    }
+
+    interface.synapsRemoveSingleListener(symbol, listener);
+  }
+
+  void removeAllListeners() {
+    for(final interface in _listeners.keys) {
+      final symbolMap = _listeners[interface];
+      for(final symbol in symbolMap.keys) {
+        final listeners = symbolMap[symbol];
+
+        for(final listener in listeners) {
+          interface.synapsRemoveListener(symbol, listener);
+        }
+      }
+    }
+
+    _listeners.clear();
+  }
+
+  void removeAllSingleListeners() {
+    for(final interface in _singleListeners.keys) {
+      final symbolMap = _singleListeners[interface];
+      for(final symbol in symbolMap.keys) {
+        final listeners = symbolMap[symbol];
+
+        for(final listener in listeners) {
+          interface.synapsRemoveSingleListener(symbol, listener);
+        }
+      }
+    }
+
+    _singleListeners.clear();
+  }
+
+  void dispose() {
+    removeAllListeners();
+    removeAllSingleListeners();
+  }
+}
+
 /// The Synaps master controller
 /// 
 /// It contains some global state to keep track of every single
@@ -237,7 +321,9 @@ class SynapsMasterController {
   /// i.e. if three variables are updated in a single playback, then `onUpdate` will
   /// be called three times, once for each variable
   /// 
-  static void monitorGranular({SynapsMonitorFunction monitor,SynapsMonitorGranularCallbackFunction onUpdate}) {
+  static _MonitorState monitorGranular({SynapsMonitorFunction monitor,SynapsMonitorGranularCallbackFunction onUpdate}) {
+    final state = _MonitorState();
+
     startRecording(SynapsRecorderMode.RECORD);
 
     try {
@@ -246,7 +332,7 @@ class SynapsMasterController {
       for(final symbol in _recorderState.internalState.keys) {
         final interface = _recorderState.internalState[symbol];
 
-        interface.synapsAddListener(symbol, (newValue) {
+        state.addListener(interface, symbol, (newValue) {
           onUpdate(symbol,newValue);
         });
       }
@@ -254,6 +340,8 @@ class SynapsMasterController {
     finally {
       stopRecording();
     }
+
+    return state;
   }
 
 
@@ -265,7 +353,9 @@ class SynapsMasterController {
   /// i.e. if three variables are updated in a single playback, then `onUpdate` will
   /// be called once
   /// 
-  static void monitor({SynapsMonitorFunction monitor,SynapsMonitorCallbackFunction onUpdate}) {
+  static _MonitorState monitor({SynapsMonitorFunction monitor,SynapsMonitorCallbackFunction onUpdate}) {
+    final state = _MonitorState();
+
     startRecording(SynapsRecorderMode.RECORD);
 
     try {
@@ -274,12 +364,14 @@ class SynapsMasterController {
       for(final symbol in _recorderState.internalState.keys) {
         final interface = _recorderState.internalState[symbol];
 
-        interface.synapsAddSingleListener(symbol, onUpdate);
+        state.addSingleListener(interface, symbol, onUpdate);
       }
     }
     finally {
       stopRecording();
     }
+
+    return state;
   }
 
   /// Calls the given function, and records all variable *writes*, and combines

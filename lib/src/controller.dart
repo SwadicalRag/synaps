@@ -58,12 +58,28 @@ class ControllerInterface {
     _symbolListeners[symbol].add(listener);
   }
 
+  void synapsRemoveListener<T>(dynamic symbol,SynapsListenerFunction<T> listener) {
+    if(!_symbolListeners.containsKey(symbol)) {
+      return;
+    }
+
+    _symbolListeners[symbol].remove(listener);
+  }
+
   void synapsAddSingleListener(dynamic symbol,SynapsSingleListenerFunction listener) {
     if(!_symbolSingleListeners.containsKey(symbol)) {
       _symbolSingleListeners[symbol] = {};
     }
 
     _symbolSingleListeners[symbol].add(listener);
+  }
+
+  void synapsRemoveSingleListener(dynamic symbol,SynapsSingleListenerFunction listener) {
+    if(!_symbolSingleListeners.containsKey(symbol)) {
+      return;
+    }
+
+    _symbolSingleListeners[symbol].remove(listener);
   }
 
   void synapsEmitListeners() {
