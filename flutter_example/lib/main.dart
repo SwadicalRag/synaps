@@ -32,8 +32,13 @@ class MyHomePage extends StatelessWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
 
   final String title;
+
+  // Use .ctx() at the end to get an Observable Controller,
+  // which internally manages all of Synaps' logic for you.
   final controller = CounterState().ctx();
 
+  // Just use `controller` as you would normally if it were a
+  // CounterState.
   void _incrementCounter() {
     controller.counter++;
   }
@@ -59,6 +64,10 @@ class MyHomePage extends StatelessWidget {
             Text(
               'You have pushed the button this many times:',
             ),
+            // Use Rx() to link Synaps to Flutter
+            // and update everything inside this lambda
+            // whenver any @Observables that were used
+            // inside it changes
             Rx(() => Text(
               '${controller.counter}',
               style: Theme.of(context).textTheme.headline4,
