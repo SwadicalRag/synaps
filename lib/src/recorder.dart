@@ -384,6 +384,8 @@ class SynapsMasterController {
   /// Calls the given function `monitor`, but and records any variable reads
   /// while that function executes.
   /// 
+  /// ***You should call [_MonitorState.dispose] once finished with monitoring***
+  /// 
   /// Will call `onUpdate` for every subsequent single variable that is updated.
   /// 
   /// i.e. if three variables are updated in a single playback, then `onUpdate` will
@@ -417,6 +419,8 @@ class SynapsMasterController {
 
   /// Calls the given function `monitor`, but and records any variable reads
   /// while that function executes.
+  /// 
+  /// ***You should call [_MonitorState.dispose] once finished with monitoring***
   /// 
   /// Will call `onUpdate` when at most once per update
   /// 
