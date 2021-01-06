@@ -1,14 +1,14 @@
 import "package:synaps/synaps.dart";
 
 typedef void SynapsListenerFunction<T>(T newValue);
-typedef void SynapsSingleListenerFunction();
+typedef void SynapsRunOnceListenerFunction();
 
 class ControllerInterface {
   // Define any methods the controller should implement here
 
   final Map<dynamic,dynamic> _dirtySymbols = {};
   final Map<dynamic,Set<SynapsListenerFunction>> _symbolListeners = {};
-  final Map<dynamic,Set<SynapsSingleListenerFunction>> _symbolSingleListeners = {};
+  final Map<dynamic,Set<SynapsRunOnceListenerFunction>> _symbolRunOnceListeners = {};
   bool _isEmitting = false;
 
   void synapsMarkVariableRead(dynamic symbol) {
@@ -26,7 +26,7 @@ class ControllerInterface {
     }
 
     // DIRTY DIRTY
-    final symbols = _symbolListeners.keys.toSet().union(_symbolSingleListeners.keys.toSet());
+    final symbols = _symbolListeners.keys.toSet().union(_symbolRunOnceListeners.keys.toSet());
 
     for (final symbol in symbols) {
       _dirtySymbols[symbol] = newValue;
@@ -66,20 +66,20 @@ class ControllerInterface {
     _symbolListeners[symbol].remove(listener);
   }
 
-  void synapsAddSingleListener(dynamic symbol,SynapsSingleListenerFunction listener) {
-    if(!_symbolSingleListeners.containsKey(symbol)) {
-      _symbolSingleListeners[symbol] = {};
+  void synapsAddRunOnceListener(dynamic symbol,SynapsRunOnceListenerFunction listener) {
+    if(!_symbolRunOnceListeners.containsKey(symbol)) {
+      _symbolRunOnceListeners[symbol] = {};
     }
 
-    _symbolSingleListeners[symbol].add(listener);
+    _symbolRunOnceListeners[symbol].add(listener);
   }
 
-  void synapsRemoveSingleListener(dynamic symbol,SynapsSingleListenerFunction listener) {
-    if(!_symbolSingleListeners.containsKey(symbol)) {
+  void synapsRemoveRunOnceListener(dynamic symbol,SynapsRunOnceListenerFunction listener) {
+    if(!_symbolRunOnceListeners.containsKey(symbol)) {
       return;
     }
 
-    _symbolSingleListeners[symbol].remove(listener);
+    _symbolRunOnceListeners[symbol].remove(listener);
   }
 
   void synapsEmitListeners() {
@@ -95,15 +95,15 @@ class ControllerInterface {
     _isEmitting = true;
 
     try {
-      final seenSingleListeners = <SynapsSingleListenerFunction>{};
+      final seenRunOnceListeners = <SynapsRunOnceListenerFunction>{};
       for(final symbol in _dirtySymbols.keys) {
-        if(_symbolSingleListeners[symbol] == null) {continue;}
+        if(_symbolRunOnceListeners[symbol] == null) {continue;}
 
-        final listeners = _symbolSingleListeners[symbol];
+        final listeners = _symbolRunOnceListeners[symbol];
 
         for(final listener in listeners) {
-          if(!seenSingleListeners.contains(listener)) {
-            seenSingleListeners.add(listener);
+          if(!seenRunOnceListeners.contains(listener)) {
+            seenRunOnceListeners.add(listener);
             
             listener();
           }
