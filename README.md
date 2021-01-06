@@ -178,7 +178,7 @@ class MyHomePage extends StatelessWidget {
             ),
             // Use Rx() to link Synaps to Flutter
             // and update everything inside this lambda
-            // whenver any @Observables that were used
+            // whenever any @Observables that were used
             // inside it changes
             Rx(() => Text(
               '${controller.counter}',
