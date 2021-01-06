@@ -23,6 +23,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  synaps_flutter:
+    path: ../flutter
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -30,10 +32,9 @@ dependencies:
   cupertino_icons: ^1.0.1
 
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  integration_test:
-    sdk: flutter
+  synaps_generator:
+    path: ../generator
+  build_runner: ^1.10.11
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
