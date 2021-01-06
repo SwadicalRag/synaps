@@ -247,6 +247,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
       }
 
       for (final method in element.methods) {
+        if (method.isStatic) {continue;}
         forwardMethod(method);
       }
 
