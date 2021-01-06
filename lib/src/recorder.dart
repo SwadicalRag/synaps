@@ -1,4 +1,5 @@
 import "package:synaps/src/controller.dart";
+import "package:meta/meta.dart";
 
 typedef void SynapsTransactionFunction();
 typedef void SynapsMonitorFunction();
@@ -391,7 +392,7 @@ class SynapsMasterController {
   /// i.e. if three variables are updated in a single playback, then `onUpdate` will
   /// be called three times, once for each variable
   /// 
-  static MonitorState monitorGranular({SynapsMonitorFunction monitor,SynapsMonitorGranularCallbackFunction onUpdate}) {
+  static MonitorState monitorGranular({@required SynapsMonitorFunction monitor,@required SynapsMonitorGranularCallbackFunction onUpdate}) {
     final state = MonitorState();
 
     startRecording(SynapsRecorderMode.RECORD);
@@ -427,7 +428,7 @@ class SynapsMasterController {
   /// i.e. if three variables are updated in a single playback, then `onUpdate` will
   /// be called once
   /// 
-  static MonitorState monitor({SynapsMonitorFunction monitor,SynapsMonitorCallbackFunction onUpdate}) {
+  static MonitorState monitor({@required SynapsMonitorFunction monitor,@required SynapsMonitorCallbackFunction onUpdate}) {
     final state = MonitorState();
 
     startRecording(SynapsRecorderMode.RECORD);
