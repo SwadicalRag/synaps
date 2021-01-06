@@ -1,0 +1,14 @@
+name: synaps_example
+description: Example program for Synaps.
+
+environment:
+  sdk: '>=2.10.0 <3.0.0'
+
+dependencies:
+  synaps:
+    path: ../
+
+dev_dependencies:
+  build_runner: ^1.10.11
+  synaps_generator:
+    path: ../generator

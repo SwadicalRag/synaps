@@ -1,0 +1,2 @@
+# Allow the generated files in this folder to be committed to source control
+!*.g.dart
