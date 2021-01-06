@@ -1,4 +1,4 @@
-import 'package:synaps/synaps.dart';
+import "package:synaps/synaps.dart";
 
 typedef void SynapsListenerFunction<T>(T newValue);
 typedef void SynapsSingleListenerFunction();

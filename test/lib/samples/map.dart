@@ -11,7 +11,7 @@ class MapTest {
     "T": "ventricular repolarisation",
   };
 
-  bool explainECG(void Function(String) callback) {
+  void explainECG(void Function(String) callback) {
     callback("An ECG has ${ecgWaves.length} waves");
 
     for(final wave in ecgWaves.keys) {

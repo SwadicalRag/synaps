@@ -1,4 +1,4 @@
-import 'package:synaps/src/controller.dart';
+import "package:synaps/src/controller.dart";
 
 typedef void SynapsTransactionFunction();
 typedef void SynapsMonitorFunction();
