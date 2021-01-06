@@ -90,9 +90,19 @@ class _MonitorState {
   /// changes to a field in a single transaction.
   /// 
   /// ```
-  /// monitorState.addRunOnceListener(controller, Symbol("wow"), () {
-  ///   print("controller.wow was updated!");
-  /// })
+  /// final listener = () {
+  ///   print("something was updated!");
+  /// };
+  /// 
+  /// monitorState.addRunOnceListener(controller, Symbol("wow"), listener);
+  /// monitorState.addRunOnceListener(controller, Symbol("hooh"), listener);
+  /// 
+  /// SynapsMasterController.transaction(() {
+  ///   controller.wow = "something";
+  ///   controller.hooh = "something else";
+  /// });
+  /// 
+  /// /// `listener` is only called once!
   /// ```
   void addRunOnceListener(ControllerInterface interface,dynamic symbol,SynapsRunOnceListenerFunction listener) {
     if(!_runOnceListeners.containsKey(interface)) {
