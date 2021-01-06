@@ -8,7 +8,7 @@ import "package:synaps/src/annotations.dart";
 Type typeOf<T>() => T;
 
 class ObservableGenerator extends GeneratorForAnnotation<Controller> {
-  void _checkAnnotationInternal<T>(FieldElement element,Map<Type,DartObject> out) {
+  void _checkAnnotationInternal<T>(Element element,Map<Type,DartObject> out) {
     final annotations =
         TypeChecker.fromRuntime(T).annotationsOf(element);
     if (annotations.isNotEmpty) {
@@ -16,10 +16,19 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
     }
   }
 
-  Map<Type,DartObject> getFieldAnnotations(FieldElement element) {
-    final out = <Type,DartObject>{};
+  Map<Type,DartObject> getFieldAnnotations(Element element,[Map<Type,DartObject> out]) {
+    out ??= {};
 
     _checkAnnotationInternal<Observable>(element, out);
+    if(element is FieldElement) {
+      if(element.getter != null) {
+        getFieldAnnotations(element.getter, out);
+      }
+      
+      if(element.setter != null) {
+        getFieldAnnotations(element.setter, out);
+      }
+    }
 
     return out;
   }
@@ -51,8 +60,12 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
 
       buffer.write("class ${className}${templateDeclarations} ");
       buffer.write("extends ${parentClassName}${templates} ");
-      if(element.mixins.isNotEmpty) {
-        final mixinList = element.mixins.map((mxn) => mxn.getDisplayString(withNullability: false)).join(",");
+      final hasWEC = element.mixins
+          .any((mxn) => mxn.element.name == "WeakEqualityController");
+      final filteredMixins = element.mixins
+          .where((mxn) => mxn.element.name != "WeakEqualityController");
+      if(filteredMixins.isNotEmpty) {
+        final mixinList = filteredMixins.map((mxn) => mxn.getDisplayString(withNullability: false)).join(",");
 
         buffer.write("with ControllerInterface,${mixinList} ");
       }
@@ -269,8 +282,11 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
       }
 
       buffer.write("${className}(this._internal)");
-      if(copyOnInitialise.isNotEmpty || activateCtxOnInitialise.isNotEmpty) {
+      if(copyOnInitialise.isNotEmpty || activateCtxOnInitialise.isNotEmpty || hasWEC) {
         buffer.writeln(" {");
+        if(hasWEC) {
+          buffer.writeln("internalObjectValue = _internal;");
+        }
         for(final fromVarName in copyOnInitialise.keys) {
           final toVarName = copyOnInitialise[fromVarName];
           final toVarType = copyOnInitialiseType[fromVarName];
@@ -286,6 +302,28 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
       }
       else {
         buffer.writeln(";");
+      }
+
+      if(hasWEC) {
+        buffer.writeln("@override");
+        buffer.writeln("bool operator ==(Object other) {");
+        buffer.writeln("if (identical(other, this)) {");
+        buffer.writeln("return true;");
+        buffer.writeln("}");
+        
+        buffer.writeln("if (identical(other, _internal)) {");
+        buffer.writeln("return true;");
+        buffer.writeln("}");
+        
+        buffer.writeln("if ((other is WeakEqualityController) && identical(other.internalObjectValue, internalObjectValue)) {");
+        buffer.writeln("return true;");
+        buffer.writeln("}");
+
+        buffer.writeln("return false;");
+        buffer.writeln("}");
+
+        buffer.writeln("@override");
+        buffer.writeln("int get hashCode => internalObjectValue.hashCode;");
       }
 
       buffer.writeln("}");

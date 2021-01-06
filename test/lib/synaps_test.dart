@@ -12,6 +12,20 @@ void main() {
 
     });
 
+    test("controllers should be equivalent to their internal classes", () {
+      final hello = Hello();
+      final helloCtx1 = hello.ctx();
+      final helloCtx2 = hello.ctx();
+      final hello2 = Hello();
+
+      expect(hello == helloCtx1,equals(true));
+      expect(hello == helloCtx2,equals(true));
+      expect(helloCtx1 == helloCtx2,equals(true));
+      expect(hello2 == hello,equals(false));
+      expect(hello2 == helloCtx1,equals(false));
+      expect(hello2 == helloCtx2,equals(false));
+    });
+
     test(".monitor() does not trigger onUpdate() for non observable fields", () {
       final hello = Hello().ctx();
 

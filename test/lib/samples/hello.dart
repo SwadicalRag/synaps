@@ -3,7 +3,7 @@ import "package:synaps/synaps.dart";
 part "hello.g.dart";
 
 @Controller()
-class Hello {
+class Hello with WeakEqualityController {
   @Observable()
   String world;
   
