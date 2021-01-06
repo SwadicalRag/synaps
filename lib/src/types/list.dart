@@ -7,20 +7,16 @@ class SynapsList<T> extends ListMixin<T> with ControllerInterface {
 
   SynapsList([this._internal = const []]);
 
-  Symbol _getSymbolForIndex(int index) {
-    return Symbol("list_${index}");
-  }
-
   @override
   T operator [](int index) {
-    synapsMarkVariableRead(_getSymbolForIndex(index));
+    synapsMarkVariableRead(index);
     return _internal[index];
   }
 
   @override
   void operator []=(int index,T value) {
     _internal[index] = value;
-    synapsMarkVariableDirty(_getSymbolForIndex(index),value);
+    synapsMarkVariableDirty(index,value);
   }
 
   @override
