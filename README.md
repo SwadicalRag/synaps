@@ -113,6 +113,10 @@ This means that a pre-written class with a bunch of fields, can be instantly use
 
 ## Usage
 
+Coming soon once the API is stable. Until then, if you are truly truly desperate, you can read through the example directories and the codebase, or if you are REALLY REALLY REALLY desperate, I am happy to answer your questions via the issue tracker in this repository.
+
+## Examples
+
 ### Flutter
 
 ```dart
