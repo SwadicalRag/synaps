@@ -1,8 +1,9 @@
 import "package:synaps/synaps.dart";
 import "package:synaps_test/samples/hello.dart";
 import "package:synaps_test/samples/list.dart";
-import 'package:synaps_test/samples/map.dart';
-import 'package:synaps_test/samples/set.dart';
+import "package:synaps_test/samples/map.dart";
+import "package:synaps_test/samples/reference.dart";
+import "package:synaps_test/samples/set.dart";
 import "package:test/test.dart";
 
 void main() {
@@ -335,6 +336,81 @@ void main() {
       expect(didUpdate,equals(1));
 
       mapTest.ecgWaves["delta"] += " commonly associated with WPW";
+
+      expect(didUpdate,equals(1));
+    });
+  });
+
+
+  group("ReferenceController", () {
+    setUp(() {
+
+    });
+
+    test(".monitor() should notify on value changes", () {
+      final refTest = ReferenceTest().ctx();
+
+      var didUpdate = 0;
+      SynapsMasterController.monitor(
+        monitor: () {
+          var stub = refTest.world;
+        },
+        onUpdate: () {
+          didUpdate++;
+        }
+      );
+
+      expect(didUpdate,equals(0));
+
+      refTest.world = Hello();
+
+      expect(didUpdate,equals(1));
+    });
+
+    test(".monitor() should not notify on changes to fields that were never detected", () {
+      final refTest = ReferenceTest().ctx();
+
+      var didUpdate = 0;
+      SynapsMasterController.monitor(
+        monitor: () {
+          var stub = refTest.world;
+          var stub2 = refTest.world?.world;
+        },
+        onUpdate: () {
+          didUpdate++;
+        }
+      );
+
+      expect(didUpdate,equals(0));
+
+      refTest.world = Hello();
+
+      expect(didUpdate,equals(1));
+
+      refTest.world.world = "boing";
+
+      expect(didUpdate,equals(1));
+    });
+
+    test(".monitor() should notify on changes to fields inside sub controllers", () {
+      final refTest = ReferenceTest().ctx();
+
+      refTest.world = Hello();
+
+      var didUpdate = 0;
+      SynapsMasterController.monitor(
+        monitor: () {
+          var stub = refTest.world;
+          var stub2 = refTest.world.world;
+        },
+        onUpdate: () {
+          didUpdate++;
+        }
+      );
+
+      expect(didUpdate,equals(0));
+
+      refTest.world.world = "boing";
 
       expect(didUpdate,equals(1));
     });

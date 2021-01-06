@@ -1,5 +1,6 @@
 import "package:analyzer/dart/constant/value.dart";
 import "package:analyzer/dart/element/element.dart";
+import "package:analyzer/dart/element/type.dart";
 import "package:source_gen/source_gen.dart";
 import "package:build/build.dart";
 import "package:synaps/src/annotations.dart";
@@ -21,6 +22,14 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
     _checkAnnotationInternal<Observable>(element, out);
 
     return out;
+  }
+
+  bool _isControllerClass(DartType type) {
+    final element = type.element;
+    final annotations =
+        TypeChecker.fromRuntime(Controller).annotationsOf(element);
+    
+    return annotations.isNotEmpty;
   }
 
   @override
@@ -55,6 +64,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
 
       final copyOnInitialise = <String,String>{};
       final copyOnInitialiseType = <String,String>{};
+      final activateCtxOnInitialise = <String,String>{};
 
       void forwardField(FieldElement field) {
         final fieldAnnotations = getFieldAnnotations(field);
@@ -87,7 +97,28 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
 
             buffer.writeln("@override");
             buffer.writeln("set ${field.name}(${typeString} value) {");
-            buffer.writeln("_internal.${field.name} = ${proxyTypeString}(value);");
+            buffer.writeln("${proxyName} = ${proxyTypeString}(value);");
+            buffer.writeln("_internal.${field.name} = value;");
+            buffer.writeln("synapsMarkVariableDirty(#${field.name},value);");
+            buffer.writeln("}");
+          }
+          else if(_isControllerClass(field.type)) {
+            final proxyName = "_proxy_${field.name}";
+            final typeString = field.type.getDisplayString(withNullability: false);
+
+            activateCtxOnInitialise[field.name] = proxyName;
+
+            buffer.writeln("${typeString} ${proxyName};");
+            buffer.writeln("@override");
+            buffer.writeln("${typeString} get ${field.name} {");
+            buffer.writeln("synapsMarkVariableRead(#${field.name});");
+            buffer.writeln("return ${proxyName};");
+            buffer.writeln("}");
+
+            buffer.writeln("@override");
+            buffer.writeln("set ${field.name}(${typeString} value) {");
+            buffer.writeln("${proxyName} = value.ctx();");
+            buffer.writeln("_internal.${field.name} = value;");
             buffer.writeln("synapsMarkVariableDirty(#${field.name},value);");
             buffer.writeln("}");
           }
@@ -220,13 +251,18 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
       }
 
       buffer.write("${className}(this._internal)");
-      if(copyOnInitialise.isNotEmpty) {
+      if(copyOnInitialise.isNotEmpty || activateCtxOnInitialise.isNotEmpty) {
         buffer.writeln(" {");
         for(final fromVarName in copyOnInitialise.keys) {
           final toVarName = copyOnInitialise[fromVarName];
           final toVarType = copyOnInitialiseType[fromVarName];
 
-          buffer.writeln("${toVarName} = ${toVarType}(_internal.${fromVarName});");
+          buffer.writeln("${toVarName} = _internal.${fromVarName} != null ? ${toVarType}(_internal.${fromVarName}) : null;");
+        }
+        for(final fromVarName in activateCtxOnInitialise.keys) {
+          final toVarName = activateCtxOnInitialise[fromVarName];
+
+          buffer.writeln("${toVarName} = _internal.${fromVarName} != null ? _internal.${fromVarName}.ctx() : null;");
         }
         buffer.writeln("}");
       }
@@ -237,8 +273,11 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
       buffer.writeln("}");
 
       buffer.writeln("extension ${classNamePublic}Extension${templateDeclarations} on ${parentClassName}${templates} {");
-      buffer.writeln("${className}${templates} asController() => ${className}${templates}(this);");
-      buffer.writeln("${className}${templates} ctx() => ${className}${templates}(this);");
+      buffer.writeln("${className}${templates} asController() {");
+      buffer.writeln("if(this is ${className}) return this;");
+      buffer.writeln("return ${className}${templates}(this);");
+      buffer.writeln("}");
+      buffer.writeln("${className}${templates} ctx() => asController();");
       buffer.writeln("}");
 
       return buffer.toString();
