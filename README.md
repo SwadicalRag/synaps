@@ -6,7 +6,7 @@
 
 [![Build Status](https://travis-ci.com/SwadicalRag/synaps.svg?token=PTT4FvfoVgjzy67HoFYD&branch=master)](https://travis-ci.com/SwadicalRag/synaps)
 
-synaps is a simple library that aims to provide tools to create observable class fields with syntactic sugar.
+synaps provides tools to create observable class fields using syntactic sugar.
 
 This library was built to work as the backend for a state management library for Flutter.
 
