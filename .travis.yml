@@ -1,0 +1,9 @@
+language: dart
+before_script:
+  - cd test
+  - pub get
+  - pub run build
+dart:
+  - stable
+script:
+  - dart run test lib
