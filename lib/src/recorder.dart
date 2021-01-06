@@ -278,11 +278,8 @@ class SynapsMasterController {
   /// reads to the current recorder state
   /// 
   static void stopRecording() {
-    if(!isRecording) {
-      // TODO: warn here when in debug mode
-
-      return;
-    }
+    assert(_recorderStateStack.isNotEmpty,
+      "[synaps] Invalid call to stopRecording(). There is no recording entry to stop!");
 
     _recorderStateStack.removeLast();
   }
@@ -338,11 +335,8 @@ class SynapsMasterController {
   /// writes to the current recorder state
   /// 
   static void stopPlayback() {
-    if(_playbackStateStack.isEmpty) {
-      // TODO: warn here when in debug mode
-
-      return;
-    }
+    assert(_playbackStateStack.isNotEmpty,
+      "[synaps] Invalid call to stopPlayback(). There is playback entry to stop!");
 
     _playbackStateStack.removeLast();
   }

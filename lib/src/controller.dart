@@ -16,14 +16,9 @@ class ControllerInterface {
   }
 
   void synapsMarkEverythingDirty(dynamic newValue) {
-    if(_isEmitting) {
-      // If we reached here, then a variable was modified inside
-      // a listener. This is not good. Therefore we'll ignore it.
-
-      // TODO: warn about this when in debug mode
-
-      return;
-    }
+    // Ensure that we are not currently emitting.
+    // i.e. this function must NOT be called from inside a listener
+    assert(!_isEmitting,"[synaps] An object was modified inside one of its listeners.");
 
     // DIRTY DIRTY
     final symbols = _symbolListeners.keys.toSet().union(_symbolRunOnceListeners.keys.toSet());
@@ -36,14 +31,9 @@ class ControllerInterface {
   }
 
   void synapsMarkVariableDirty(dynamic symbol,dynamic newValue, [bool noPlayback = false]) {
-    if(_isEmitting) {
-      // If we reached here, then a variable was modified inside
-      // a listener. This is not good. Therefore we'll ignore it.
-
-      // TODO: warn about this when in debug mode
-
-      return;
-    }
+    // Ensure that we are not currently emitting.
+    // i.e. this function must NOT be called from inside a listener
+    assert(!_isEmitting,"[synaps] A field of an object was modified inside one of its listeners.");
 
     _dirtySymbols[symbol] = newValue;
 
@@ -83,14 +73,10 @@ class ControllerInterface {
   }
 
   void synapsEmitListeners() {
-    if(_isEmitting) {
-      // If we reached here, then an emit was explicitly called
-      // during a listener. This is not good. Therefore we'll ignore it.
-
-      // TODO: warn about this when in debug mode
-
-      return;
-    }
+    // Ensure that we are not currently emitting.
+    // i.e. you shouldn't re-emit while you are already emitting
+    // There should already be logic in place to prevent this.
+    assert(!_isEmitting,"[synaps] An emit request while trying to fulfil an earlier emit request.");
 
     _isEmitting = true;
 
