@@ -6,4 +6,4 @@ before_script:
 dart:
   - stable
 script:
-  - dart run test lib/synaps_test.dart
+  - pub run test lib
