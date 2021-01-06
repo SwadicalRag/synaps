@@ -6,7 +6,7 @@
 
 [![Build Status](https://travis-ci.com/SwadicalRag/synaps.svg?token=PTT4FvfoVgjzy67HoFYD&branch=master)](https://travis-ci.com/SwadicalRag/synaps)
 
-synaps provides tools to create observable class fields using syntactic sugar.
+synaps provides tools to create observable class fields using decorators.
 
 This library was built to work as the backend for a state management library for Flutter.
 
@@ -69,7 +69,7 @@ Let's assume that UI code is completely separate from application code, and ask 
 
 > **Q: If the UI and Application logic is completely separate, what's missing?**
 >
-> **A:** A "glue" code that sends changes in application data to the UI, and also sends converts
+> **A:** A "glue" code that sends changes in application data to the UI, and also sends/converts
 > human interactions into application data.
 
 > **Q: Doesn't this "glue" stuff sound just like BLoC, Redux, etc.?**
