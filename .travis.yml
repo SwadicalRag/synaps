@@ -2,7 +2,7 @@ language: dart
 before_script:
   - cd test
   - pub get
-  - pub run build
+  - pub run build_runner build
 dart:
   - stable
 script:
