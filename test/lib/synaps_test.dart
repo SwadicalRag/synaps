@@ -1,6 +1,7 @@
 import "package:synaps/synaps.dart";
 import "package:synaps_test/samples/hello.dart";
 import "package:synaps_test/samples/list.dart";
+import 'package:synaps_test/samples/set.dart';
 import "package:test/test.dart";
 
 void main() {
@@ -237,6 +238,39 @@ void main() {
       // (and yes, yes, yes, that indeed... is NUMBERWANG!)
 
       expect(didUpdate,equals(3));
+    });
+  });
+
+
+  group("SetController", () {
+    setUp(() {
+
+    });
+
+    test(".monitor() should notify on set changes", () {
+      final setTest = SetTest().ctx();
+
+      var didUpdate = 0;
+      SynapsMasterController.monitor(
+        monitor: () {
+          if(setTest.isDisgusting()) {
+            // disappointment goes here
+          }
+        },
+        onUpdate: () {
+          didUpdate++;
+        }
+      );
+
+      expect(didUpdate,equals(0));
+
+      setTest.pizzaToppings.add("tomato sauce");
+
+      expect(didUpdate,equals(0));
+
+      setTest.pizzaToppings.add("pineapples");
+
+      expect(didUpdate,equals(1));
     });
   });
 }
