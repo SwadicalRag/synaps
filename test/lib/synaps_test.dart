@@ -119,7 +119,7 @@ void main() {
           var stub = hello.world;
           var stub2 = hello.universe;
         },
-        onUpdate: (symbol,newVal) {
+        onUpdate: (interface,symbol,newVal) {
           didUpdate++;
         }
       );
@@ -132,6 +132,28 @@ void main() {
       });
 
       expect(didUpdate,equals(2));
+    });
+
+    test(".monitor() should trigger onUpdate for the correct interface", () {
+      final hello = Hello().ctx();
+      final hello2 = Hello();
+
+      var didUpdate = 0;
+      SynapsMasterController.monitorGranular(
+        monitor: () {
+          var stub = hello.world;
+          var stub2 = hello2.universe;
+        },
+        onUpdate: (interface,symbol,newVal) {
+          expect(interface,equals(hello));
+          didUpdate++;
+        }
+      );
+
+      hello.world = "Ultra";
+      hello2.universe = "Chungus";
+
+      expect(didUpdate,equals(1));
     });
 
     test(".monitor() should not trigger onUpdate if ignore is used", () {

@@ -2,7 +2,7 @@ import "package:synaps/src/controller.dart";
 
 typedef void SynapsTransactionFunction();
 typedef void SynapsMonitorFunction();
-typedef void SynapsMonitorGranularCallbackFunction(dynamic symbol,dynamic newValue);
+typedef void SynapsMonitorGranularCallbackFunction(ControllerInterface interface, dynamic symbol,dynamic newValue);
 typedef void SynapsMonitorCallbackFunction();
 
 /// what to do when a variable is read from
@@ -15,7 +15,8 @@ enum SynapsRecorderMode {
 }
 
 class SynapsRecorderState {
-  final internalState = <dynamic,ControllerInterface>{};
+  /// Map of Interfaces to a Set of Symbols that were read from
+  final Map<ControllerInterface,Set<dynamic>> internalState = {};
   SynapsRecorderMode mode = SynapsRecorderMode.VOID;
 }
 
@@ -32,7 +33,8 @@ enum SynapsPlaybackMode {
 }
 
 class SynapsPlaybackState {
-  final internalState = <dynamic,ControllerInterface>{};
+  /// Map of Interfaces to a Set of Symbols that were written to
+  final Map<ControllerInterface,Set<dynamic>> internalState = {};
   SynapsPlaybackMode mode = SynapsPlaybackMode.LIVE;
 }
 
@@ -233,7 +235,11 @@ class SynapsMasterController {
   /// recorder state
   static void recordVariableRead(dynamic symbol,ControllerInterface interface) {
     if(isRecording) {
-      _recorderState.internalState[symbol] = interface;
+      if(!_recorderState.internalState.containsKey(interface)) {
+        _recorderState.internalState[interface] = {};
+      }
+
+      _recorderState.internalState[interface].add(symbol);
     }
   }
 
@@ -286,7 +292,11 @@ class SynapsMasterController {
   /// playback state
   /// 
   static void recordVariableWrite(dynamic symbol,ControllerInterface interface, [bool noPlayback = false]) {
-    _playbackState.internalState[symbol] = interface;
+    if(!_playbackState.internalState.containsKey(interface)) {
+      _playbackState.internalState[interface] = {};
+    }
+
+    _playbackState.internalState[interface].add(symbol);
     if(isLive && !noPlayback) {
       doPlayback();
     }
@@ -345,7 +355,7 @@ class SynapsMasterController {
     _playbackState.mode = SynapsPlaybackMode.PLAYING;
 
     try {
-      for(final interface in _playbackState.internalState.values.toSet()) {
+      for(final interface in _playbackState.internalState.keys) {
         interface.synapsEmitListeners();
       }
     }
@@ -387,12 +397,14 @@ class SynapsMasterController {
     try {
       monitor();
 
-      for(final symbol in _recorderState.internalState.keys) {
-        final interface = _recorderState.internalState[symbol];
+      for(final interface in _recorderState.internalState.keys) {
+        final symbols = _recorderState.internalState[interface];
 
-        state.addListener(interface, symbol, (newValue) {
-          onUpdate(symbol,newValue);
-        });
+        for(final symbol in symbols) {
+          state.addListener(interface, symbol, (newValue) {
+            onUpdate(interface, symbol, newValue);
+          });
+        }
       }
     }
     finally {
@@ -419,10 +431,12 @@ class SynapsMasterController {
     try {
       monitor();
 
-      for(final symbol in _recorderState.internalState.keys) {
-        final interface = _recorderState.internalState[symbol];
+      for(final interface in _recorderState.internalState.keys) {
+        final symbols = _recorderState.internalState[interface];
 
-        state.addRunOnceListener(interface, symbol, onUpdate);
+        for(final symbol in symbols) {
+          state.addRunOnceListener(interface, symbol, onUpdate);
+        }
       }
     }
     finally {
