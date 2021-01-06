@@ -36,10 +36,18 @@ class SynapsPlaybackState {
   SynapsPlaybackMode mode = SynapsPlaybackMode.LIVE;
 }
 
+/// The MonitorState is used to manage each listener callback linked to a ControllerInterface
 class _MonitorState {
   final Map<ControllerInterface,Map<dynamic,Set<SynapsListenerFunction>>> _listeners = {};
   final Map<ControllerInterface,Map<dynamic,Set<SynapsSingleListenerFunction>>> _singleListeners = {};
 
+  /// Adds a listener to an interface
+  /// 
+  /// ```
+  /// monitorState.addListener<T>(controller, Symbol("wow"), (T newValue) {
+  ///   print("controller.wow was updated to ${newValue}!");
+  /// })
+  /// ```
   void addListener<T>(ControllerInterface interface,dynamic symbol,SynapsListenerFunction<T> listener) {
     if(!_listeners.containsKey(interface)) {
       _listeners[interface] = {};
@@ -52,6 +60,19 @@ class _MonitorState {
     interface.synapsAddListener(symbol, listener);
   }
 
+
+  /// Removes a listener from an interface
+  /// 
+  /// ```
+  /// final listener = (T newValue) {
+  ///   print("controller.wow was updated to ${newValue}!");
+  /// };
+  /// 
+  /// monitorState.addListener<T>(controller, Symbol("wow"), listener);
+  /// ...
+  /// monitorState.removeListener(controller, Symbol("wow"), listener);
+  /// 
+  /// ```
   void removeListener<T>(ControllerInterface interface,dynamic symbol,SynapsListenerFunction<T> listener) {
     if(_listeners.containsKey(interface)) {
       if(_listeners[interface].containsKey(symbol)) {
@@ -62,6 +83,17 @@ class _MonitorState {
     interface.synapsRemoveListener(symbol, listener);
   }
 
+
+  /// Adds a singleListener to an interface
+  /// 
+  /// Used internally to only call the given listener once despite multiple
+  /// changes to a field in a single transaction.
+  /// 
+  /// ```
+  /// monitorState.addSingleListener(controller, Symbol("wow"), () {
+  ///   print("controller.wow was updated!");
+  /// })
+  /// ```
   void addSingleListener(ControllerInterface interface,dynamic symbol,SynapsSingleListenerFunction listener) {
     if(!_singleListeners.containsKey(interface)) {
       _singleListeners[interface] = {};
@@ -74,6 +106,19 @@ class _MonitorState {
     interface.synapsAddSingleListener(symbol, listener);
   }
 
+
+  /// Removes a singleListener from an interface
+  /// 
+  /// ```
+  /// final listener = () {
+  ///   print("controller.wow was updated!");
+  /// };
+  /// 
+  /// monitorState.addSingleListener(controller, Symbol("wow"), listener);
+  /// ...
+  /// monitorState.removeSingleListener(controller, Symbol("wow"), listener);
+  /// 
+  /// ```
   void removeSingleListener(ControllerInterface interface,dynamic symbol,SynapsSingleListenerFunction listener) {
     if(_singleListeners.containsKey(interface)) {
       if(_singleListeners[interface].containsKey(symbol)) {
@@ -84,6 +129,7 @@ class _MonitorState {
     interface.synapsRemoveSingleListener(symbol, listener);
   }
 
+  /// Removes all listeners registered in this MonitorState
   void removeAllListeners() {
     for(final interface in _listeners.keys) {
       final symbolMap = _listeners[interface];
@@ -99,6 +145,7 @@ class _MonitorState {
     _listeners.clear();
   }
 
+  /// Removes all singleListeners registered in this MonitorState
   void removeAllSingleListeners() {
     for(final interface in _singleListeners.keys) {
       final symbolMap = _singleListeners[interface];
@@ -114,6 +161,7 @@ class _MonitorState {
     _singleListeners.clear();
   }
 
+  /// Internally removes all kinds of listeners registered with this MonitorState
   void dispose() {
     removeAllListeners();
     removeAllSingleListeners();
