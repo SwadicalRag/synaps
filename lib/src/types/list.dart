@@ -21,7 +21,7 @@ class SynapsList<T> extends ListMixin<T> with ControllerInterface {
 
   @override
   int get length {
-    synapsMarkVariableRead(#length);
+    synapsMarkVariableRead(ControllerInterface.LENGTH_ORACLE);
     return _internal.length;
   }
 
@@ -29,7 +29,7 @@ class SynapsList<T> extends ListMixin<T> with ControllerInterface {
   set length(int value) {
     if(value != _internal.length) {
       _internal.length = value;
-      synapsMarkVariableDirty(#length,value);
+      synapsMarkVariableDirty(ControllerInterface.LENGTH_ORACLE,value);
     }
   }
 }

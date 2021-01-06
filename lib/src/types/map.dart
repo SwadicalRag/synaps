@@ -41,9 +41,6 @@ class SynapsMapKeysIterable<K,V> extends Iterable<K> {
 }
 
 class SynapsMap<K,V> extends MapMixin<K,V> with ControllerInterface {
-  static final _LENGTH_ORACLE = Object();
-  static final _KEYS_ORACLE = Object();
-  static final NULL_ORACLE = Object();
   final Map<K,V> _internal;
 
   Iterable<K> _keysInternal;
@@ -64,14 +61,14 @@ class SynapsMap<K,V> extends MapMixin<K,V> with ControllerInterface {
 
     if(oldValue != value) {
       synapsMarkVariableDirty(index,value,true);
-      synapsMarkVariableDirty(_KEYS_ORACLE,_internal.length,true);
-      synapsMarkVariableDirty(_LENGTH_ORACLE,_internal.length);
+      synapsMarkVariableDirty(ControllerInterface.KEYS_ORACLE,_internal.length,true);
+      synapsMarkVariableDirty(ControllerInterface.LENGTH_ORACLE,_internal.length);
     }
   }
 
   @override
   void clear() {
-    synapsMarkEverythingDirty(NULL_ORACLE);
+    synapsMarkEverythingDirty(ControllerInterface.NULL_ORACLE);
     _internal.clear();
   }
 
@@ -79,22 +76,22 @@ class SynapsMap<K,V> extends MapMixin<K,V> with ControllerInterface {
   V remove(Object key) {
     final removed = _internal.remove(key);
     if(removed != null) {
-      synapsMarkVariableDirty(key,NULL_ORACLE,true);
-      synapsMarkVariableDirty(_KEYS_ORACLE,_internal.length,true);
-      synapsMarkVariableDirty(_LENGTH_ORACLE,_internal.length);
+      synapsMarkVariableDirty(key,ControllerInterface.NULL_ORACLE,true);
+      synapsMarkVariableDirty(ControllerInterface.KEYS_ORACLE,_internal.length,true);
+      synapsMarkVariableDirty(ControllerInterface.LENGTH_ORACLE,_internal.length);
     }
     return removed;
   }
 
   @override
   int get length {
-    synapsMarkVariableRead(_LENGTH_ORACLE);
+    synapsMarkVariableRead(ControllerInterface.LENGTH_ORACLE);
     return _internal.length;
   }
 
   @override
   Iterable<K> get keys {
-    synapsMarkVariableRead(_KEYS_ORACLE);
+    synapsMarkVariableRead(ControllerInterface.KEYS_ORACLE);
     return _keysInternal;
   }
 }
