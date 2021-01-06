@@ -54,12 +54,21 @@ class ControllerInterface {
   final Map<dynamic,dynamic> _dirtySymbols = {};
   final Map<dynamic,Set<SynapsListenerFunction>> _symbolListeners = {};
   final Map<dynamic,Set<SynapsRunOnceListenerFunction>> _symbolRunOnceListeners = {};
+  
+  /// True if this controller is currently inside [synapsEmitListeners] and is
+  /// emitting to listeners
   bool _isEmitting = false;
 
+  /// **INTERNAL. DO NOT USE.**
+  /// Called by the generated code's getters to inform synaps
+  /// that a field has been accessed.
   void synapsMarkVariableRead(dynamic symbol) {
     SynapsMasterController.recordVariableRead(symbol, this);
   }
 
+  /// **INTERNAL. DO NOT USE.**
+  /// Called by special synaps objects to inform synaps
+  /// that the entire controller has been modified.
   void synapsMarkEverythingDirty(dynamic newValue) {
     // Ensure that we are not currently emitting.
     // i.e. this function must NOT be called from inside a listener
@@ -75,6 +84,9 @@ class ControllerInterface {
     }
   }
 
+  /// **INTERNAL. DO NOT USE.**
+  /// Called by the generated code's setters to inform synaps
+  /// that a field has been modified.
   void synapsMarkVariableDirty(dynamic symbol,dynamic newValue, [bool noPlayback = false]) {
     // Ensure that we are not currently emitting.
     // i.e. this function must NOT be called from inside a listener
@@ -85,6 +97,62 @@ class ControllerInterface {
     SynapsMasterController.recordVariableWrite(symbol, this, noPlayback);
   }
 
+  /// Adds a listener to this controller.
+  /// To listen to something, two things are needed:
+  /// 1. What is going to be listened to?
+  /// 2. The actual listener callback.
+  /// 
+  /// The listener function is given `newValue`, which is the new value
+  /// of the field, key or entry that was changed.
+  /// 
+  /// When a field, key or entry is assigned `null`, the listener function receives
+  /// a `NullOracle` as its `newValue` parameter. To check if a field has been nulled,
+  /// first cast `newValue` to a SynapsOracle, and then use .isNull
+  /// 
+  /// ```
+  /// synapsAddListener(something,(dynamic newValue) {
+  ///   if((newValue is SynapsOracle) && newValue.isNull) {
+  ///     // assigned null!
+  ///   }
+  /// });
+  /// ```
+  /// 
+  /// [synapsAddListener] requires a "symbol" to figure out what to listen to.
+  /// A symbol is a way to represent the field, key or entry that is being changed.
+  /// 
+  /// In a ControllerInterface for a class, this "symbol" will be an actual
+  /// [Symbol] of the field itself. That is, given `someClass.someField`,
+  /// and the aim is to listen to `someField`, the symbol will be
+  ///  `Symbol("someField")`
+  /// 
+  /// For more complex controllers, [Symbol]s are not used to track the
+  /// field, key or entry being changed.
+  /// 
+  /// In a List, this "symbol" will be the integer index of a field inside
+  /// the list.
+  /// That is, given `someClass.someList`, and the aim is to listen to
+  /// `someList.length` and `someList[3]`, the symbols are `Symbol("length")`
+  /// and `(int) 3` respectively
+  /// 
+  /// In a Set, this "symbol" will be an entry inside the set itself.
+  /// That is, given `someClass.someSet`, and the aim is to listen to `someSet.first`
+  /// (where this is equal to `"someValue"`), the symbol is `(String) "someValue"`
+  /// 
+  /// In a Map, this "symbol" will be one of the keys inside the map itself.
+  /// That is, given `someClass.someSet`, and the aim is to listen to `someSet[someOtherValue]`
+  /// (where `someOtherValue` is of type `SomeOtherClass`), the symbol is 
+  /// `(SomeOtherClass) someOtherValue`
+  /// 
+  /// Special cases include `.length` fields, and `.keys` fields, both of which become
+  /// a `LengthOracle` and a `KeyOracle` respectively
+  /// 
+  /// ```
+  /// // Listen to changes to `length` field
+  /// synapsAddListener(SynapsOracle.LENGTH,(dynamic newValue) {
+  ///   // length changed!
+  /// });
+  /// ```
+  /// 
   void synapsAddListener<T>(dynamic symbol,SynapsListenerFunction<T> listener) {
     if(!_symbolListeners.containsKey(symbol)) {
       _symbolListeners[symbol] = {};
@@ -93,6 +161,9 @@ class ControllerInterface {
     _symbolListeners[symbol].add(listener);
   }
 
+  /// Removes a listener from this controller.
+  /// The listener function needs to be exactly the same function
+  /// that was originally passed into synapsAddListener
   void synapsRemoveListener<T>(dynamic symbol,SynapsListenerFunction<T> listener) {
     if(!_symbolListeners.containsKey(symbol)) {
       return;
@@ -105,6 +176,12 @@ class ControllerInterface {
     }
   }
 
+  /// Adds a runOnce listener to this controller. This listener is guaranteed to run
+  /// once per transaction. (i.e. if multiple fields were modified during a transaction,
+  /// and the same runOnce listener was added to multiple fields, that listener will only
+  /// be called once)
+  /// 
+  /// See [synapsAddListener]
   void synapsAddRunOnceListener(dynamic symbol,SynapsRunOnceListenerFunction listener) {
     if(!_symbolRunOnceListeners.containsKey(symbol)) {
       _symbolRunOnceListeners[symbol] = {};
@@ -113,6 +190,9 @@ class ControllerInterface {
     _symbolRunOnceListeners[symbol].add(listener);
   }
 
+  /// Adds a runOnce listener to this controller.
+  /// 
+  /// See [synapsAddListener]
   void synapsRemoveRunOnceListener(dynamic symbol,SynapsRunOnceListenerFunction listener) {
     if(!_symbolRunOnceListeners.containsKey(symbol)) {
       return;
@@ -125,6 +205,8 @@ class ControllerInterface {
     }
   }
 
+  /// **INTERNAL. DO NOT USE.**
+  /// Calls each listener for every update that has been recorded into this controller
   void synapsEmitListeners() {
     // Ensure that we are not currently emitting.
     // i.e. you shouldn't re-emit while you are already emitting
