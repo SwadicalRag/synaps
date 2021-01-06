@@ -143,9 +143,9 @@ class SynapsMasterController {
   /// Used by [ControllerInterface] to save variable writes to the current
   /// playback state
   /// 
-  static void recordVariableWrite(dynamic symbol,ControllerInterface interface) {
+  static void recordVariableWrite(dynamic symbol,ControllerInterface interface, [bool noPlayback = false]) {
     _playbackState.internalState[symbol] = interface;
-    if(isLive) {
+    if(isLive && !noPlayback) {
       doPlayback();
     }
   }

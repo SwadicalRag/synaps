@@ -1,6 +1,7 @@
 import "package:synaps/synaps.dart";
 import "package:synaps_test/samples/hello.dart";
 import "package:synaps_test/samples/list.dart";
+import 'package:synaps_test/samples/map.dart';
 import 'package:synaps_test/samples/set.dart';
 import "package:test/test.dart";
 
@@ -269,6 +270,71 @@ void main() {
       expect(didUpdate,equals(0));
 
       setTest.pizzaToppings.add("pineapples");
+
+      expect(didUpdate,equals(1));
+    });
+  });
+
+
+  group("MapController", () {
+    setUp(() {
+
+    });
+
+    test(".monitor() should notify on map changes", () {
+      final mapTest = MapTest().ctx();
+
+      var didUpdate = 0;
+      SynapsMasterController.monitor(
+        monitor: () {
+          // oh no it's 2 hours before my exam and i have forgotten how to read an ECG!
+          // I know, I'll just ask my trusty test suite to explain everything to me!
+
+          mapTest.explainECG((sentence) {
+            // but ironically, we're not listening to anything this function says
+          });
+        },
+        onUpdate: () {
+          didUpdate++;
+        }
+      );
+
+      expect(didUpdate,equals(0));
+
+      mapTest.ecgWaves["U"] = "Purkinje fibre repolarisation";
+
+      expect(didUpdate,equals(1));
+    });
+
+    test(".monitor() should notify only on relevant map changes", () {
+      final mapTest = MapTest().ctx();
+
+      var didUpdate = 0;
+      SynapsMasterController.monitor(
+        monitor: () {
+          // what does the P wave do again?
+
+          final pWave = mapTest.ecgWaves["P"];
+
+          // I guess this is relevant too!
+          mapTest.ecgWaves["delta"] = "slurred upstroke of QRS complex";
+        },
+        onUpdate: () {
+          didUpdate++;
+        }
+      );
+
+      expect(didUpdate,equals(0));
+
+      mapTest.ecgWaves["U"] = "Purkinje fibre repolarisation";
+
+      expect(didUpdate,equals(0));
+
+      mapTest.ecgWaves["P"] += " following SA node activation";
+
+      expect(didUpdate,equals(1));
+
+      mapTest.ecgWaves["delta"] += " commonly associated with WPW";
 
       expect(didUpdate,equals(1));
     });

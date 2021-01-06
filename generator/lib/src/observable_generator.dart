@@ -70,7 +70,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
         if(fieldAnnotations.containsKey(Observable)) {
           final annotation = fieldAnnotations[Observable];
 
-          if(field.type.isDartCoreList || field.type.isDartCoreSet) {
+          if(field.type.isDartCoreList || field.type.isDartCoreSet || field.type.isDartCoreMap) {
             final proxyName = "_proxy_${field.name}";
             final typeString = field.type.getDisplayString(withNullability: false);
             final proxyTypeString = "Synaps" + typeString;
@@ -87,7 +87,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
 
             buffer.writeln("@override");
             buffer.writeln("set ${field.name}(${typeString} value) {");
-            buffer.writeln("_internal.${field.name} = value;");
+            buffer.writeln("_internal.${field.name} = ${proxyTypeString}(value);");
             buffer.writeln("synapsMarkVariableDirty(#${field.name},value);");
             buffer.writeln("}");
           }

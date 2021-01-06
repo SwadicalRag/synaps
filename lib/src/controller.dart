@@ -15,7 +15,27 @@ class ControllerInterface {
     SynapsMasterController.recordVariableRead(symbol, this);
   }
 
-  void synapsMarkVariableDirty(dynamic symbol,dynamic newValue) {
+  void synapsMarkEverythingDirty(dynamic newValue) {
+    if(_isEmitting) {
+      // If we reached here, then a variable was modified inside
+      // a listener. This is not good. Therefore we'll ignore it.
+
+      // TODO: warn about this when in debug mode
+
+      return;
+    }
+
+    // DIRTY DIRTY
+    final symbols = _symbolListeners.keys.toSet().union(_symbolSingleListeners.keys.toSet());
+
+    for (final symbol in symbols) {
+      _dirtySymbols[symbol] = newValue;
+
+      SynapsMasterController.recordVariableWrite(symbol, this, symbol != symbols.last);
+    }
+  }
+
+  void synapsMarkVariableDirty(dynamic symbol,dynamic newValue, [bool noPlayback = false]) {
     if(_isEmitting) {
       // If we reached here, then a variable was modified inside
       // a listener. This is not good. Therefore we'll ignore it.
@@ -27,7 +47,7 @@ class ControllerInterface {
 
     _dirtySymbols[symbol] = newValue;
 
-    SynapsMasterController.recordVariableWrite(symbol, this);
+    SynapsMasterController.recordVariableWrite(symbol, this, noPlayback);
   }
 
   void synapsAddListener<T>(dynamic symbol,SynapsListenerFunction<T> listener) {
