@@ -39,7 +39,7 @@ class SynapsPlaybackState {
 }
 
 /// The MonitorState is used to manage each listener callback linked to a ControllerInterface
-class _MonitorState {
+class MonitorState {
   final Map<ControllerInterface,Map<dynamic,Set<SynapsListenerFunction>>> _listeners = {};
   final Map<ControllerInterface,Map<dynamic,Set<SynapsRunOnceListenerFunction>>> _runOnceListeners = {};
 
@@ -384,15 +384,15 @@ class SynapsMasterController {
   /// Calls the given function `monitor`, but and records any variable reads
   /// while that function executes.
   /// 
-  /// ***You should call [_MonitorState.dispose] once finished with monitoring***
+  /// ***You should call [MonitorState.dispose] once finished with monitoring***
   /// 
   /// Will call `onUpdate` for every subsequent single variable that is updated.
   /// 
   /// i.e. if three variables are updated in a single playback, then `onUpdate` will
   /// be called three times, once for each variable
   /// 
-  static _MonitorState monitorGranular({SynapsMonitorFunction monitor,SynapsMonitorGranularCallbackFunction onUpdate}) {
-    final state = _MonitorState();
+  static MonitorState monitorGranular({SynapsMonitorFunction monitor,SynapsMonitorGranularCallbackFunction onUpdate}) {
+    final state = MonitorState();
 
     startRecording(SynapsRecorderMode.RECORD);
 
@@ -420,15 +420,15 @@ class SynapsMasterController {
   /// Calls the given function `monitor`, but and records any variable reads
   /// while that function executes.
   /// 
-  /// ***You should call [_MonitorState.dispose] once finished with monitoring***
+  /// ***You should call [MonitorState.dispose] once finished with monitoring***
   /// 
   /// Will call `onUpdate` when at most once per update
   /// 
   /// i.e. if three variables are updated in a single playback, then `onUpdate` will
   /// be called once
   /// 
-  static _MonitorState monitor({SynapsMonitorFunction monitor,SynapsMonitorCallbackFunction onUpdate}) {
-    final state = _MonitorState();
+  static MonitorState monitor({SynapsMonitorFunction monitor,SynapsMonitorCallbackFunction onUpdate}) {
+    final state = MonitorState();
 
     startRecording(SynapsRecorderMode.RECORD);
 
