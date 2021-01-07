@@ -1,7 +1,7 @@
 import "package:synaps/src/controller.dart";
 import "package:meta/meta.dart";
 
-typedef void SynapsTransactionFunction();
+typedef T SynapsWrapperFunction<T>();
 typedef void SynapsMonitorFunction();
 typedef void SynapsMonitorGranularCallbackFunction(SynapsControllerInterface interface, dynamic symbol,dynamic newValue);
 typedef void SynapsMonitorCallbackFunction();
@@ -369,12 +369,12 @@ class SynapsMasterController {
   /// Calls the given function, but does not record any variable reads and writes
   /// while that function executes. (Unless a sub-function explicitly
   /// calls [monitor]/[monitorGranular]/[transaction])
-  static void ignore(SynapsTransactionFunction fn) {
+  static T ignore<T>(SynapsWrapperFunction<T> fn) {
     startRecording(SynapsRecorderMode.VOID);
     startPlayback(SynapsPlaybackMode.PAUSED);
 
     try {
-      fn();
+      return fn();
     }
     finally {
       stopPlayback();
@@ -457,12 +457,15 @@ class SynapsMasterController {
   /// If an error is thrown inside the transaction, the playback event is abandoned, and
   /// no callbacks are triggered.
   /// 
-  static void transaction(SynapsTransactionFunction fn) {
+  static T transaction<T>(SynapsWrapperFunction<T> fn) {
     startPlayback(SynapsPlaybackMode.PAUSED);
 
     try {
-      fn();
+      final ret = fn();
+
       doPlayback();
+
+      return ret;
     }
     finally {
       stopPlayback();
