@@ -71,7 +71,13 @@ class RxState extends State<Rx> {
     if(!_monitorState.hasCapturedSymbols) {
       throw """
       [synaps_flutter] No observable variables were detected directly inside this widget.
-      Are you sure you are using Rx() correctly?
+      Several common issues that lead to this error include:
+      1. Not using .ctx()/.toController() on @Controller() classes
+      2. Not using any @Controller() classes inside this Rx() widget
+      3. The field being accessed was not marked with @Observable()
+      4. The field is being accessed *asynchronously* and/or *after* the build function has
+          returned a value. It does not make sense to update a widget because of a field that
+          does not participate in the making of the return value of this build method
       """;
     }
 
