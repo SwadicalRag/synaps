@@ -9,10 +9,23 @@ void main() {
 
 // Define the counter class
 @Controller()
-class CounterState {
+class Counter {
   // Create an observable field for our int counter
   @Observable()
   int counter = 0;
+
+  // Just use `counter` as you would normally if it were a field
+  void incrementCounter() {
+    counter++;
+  }
+
+  void decrementCounter() {
+    counter--;
+  }
+
+  void zeroCounter() {
+    counter = 0;
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -35,21 +48,7 @@ class MyHomePage extends StatelessWidget {
 
   // Use .ctx() at the end to get an Observable Controller,
   // which internally manages all of Synaps' logic for you.
-  final controller = CounterState().ctx();
-
-  // Just use `controller` as you would normally if it were a
-  // CounterState.
-  void _incrementCounter() {
-    controller.counter++;
-  }
-
-  void _decrementCounter() {
-    controller.counter--;
-  }
-
-  void _zeroCounter() {
-    controller.counter = 0;
-  }
+  final controller = Counter().ctx();
 
   @override
   Widget build(BuildContext context) {
@@ -79,19 +78,19 @@ class MyHomePage extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           FloatingActionButton(
-            onPressed: _incrementCounter,
+            onPressed: controller.incrementCounter,
             tooltip: 'Increment',
             child: Icon(Icons.add),
           ),
           SizedBox(width: 15),
           FloatingActionButton(
-            onPressed: _zeroCounter,
+            onPressed: controller.zeroCounter,
             tooltip: 'Zero',
             child: Icon(Icons.settings_backup_restore),
           ),
           SizedBox(width: 15),
           FloatingActionButton(
-            onPressed: _decrementCounter,
+            onPressed: controller.decrementCounter,
             tooltip: 'Decrement',
             child: Icon(Icons.remove),
           ),

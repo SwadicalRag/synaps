@@ -191,104 +191,139 @@ Flutter that a rebuild would likely change the UI.
 
 Coming soon once the API is stable. Until then, if you are truly truly desperate, you can read through the example directories and the codebase, or if you are REALLY REALLY REALLY desperate, I am happy to answer your questions via the issue tracker in this repository.
 
-## Examples
+## Examples / Breakdown
 
 ### Flutter
 
+See `flutter_example\lib\main.dart`
+
 ```dart
-import 'package:flutter/material.dart';
+
 import 'package:synaps_flutter/synaps_flutter.dart';
 
+```
+
+The first step to using synaps_flutter is to import the library.
+
+```dart
 // We need this for synaps' generators
 part "main.g.dart";
 
 // Define the counter class
 @Controller()
-class CounterState {
+class Counter {
   // Create an observable field for our int counter
   @Observable()
   int counter = 0;
+```
+
+Then, we need to define the state that is going to be glued. This can be
+a logic class you have already written, or just a plain old description of data.
+Importantly, we need to use `@Controller()` and `@Observable()` for synaps
+to understand what you are trying to do.
+
+```dart
+  // Just use `counter` as you would normally if it were a field
+  void incrementCounter() {
+    counter++;
+  }
+
+  void decrementCounter() {
+    counter--;
+  }
+
+  void zeroCounter() {
+    counter = 0;
+  }
 }
+```
 
+Then, we need our application logic.
+In this example, we have added our application logic directly to the counter controller.
+
+Have you noticed it yet? The `Counter` class on its own does not depend on flutter at all.
+
+You can easily run it in an environment without flutter (*COUGH* for testing *COUGH*).
+
+
+```dart
 class MyHomePage extends StatelessWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-
-  final String title;
+  ...
 
   // Use .ctx() at the end to get an Observable Controller,
   // which internally manages all of Synaps' logic for you.
-  final controller = CounterState().ctx();
+  final controller = Counter().ctx();
 
-  // Just use `controller` as you would normally if it were a
-  // CounterState.
-  void _incrementCounter() {
-    controller.counter++;
-  }
+```
 
-  void _decrementCounter() {
-    controller.counter--;
-  }
+Then, we need to initialise the controller that you defined above. There are no
+restricitons on where this should be done. You can initialise a controller into a 
+global variable if you truly wanted to.
 
-  void _zeroCounter() {
-    controller.counter = 0;
-  }
+In this example, we have initialised the Counter into a StatelessWidget.
+If you want to access this controller from a child widget, you can use whatever method you want
+InheritedWidgets, passing the controller as a constructor argument to a child widget, or
+even just using global variables and importing it into the file you want to use it in.
 
+Each method has its own strengths and weaknesses, the discussion of which is not in
+the scope of this simple example.
+
+```dart
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            // Use Rx() to link Synaps to Flutter
-            // and update everything inside this lambda
-            // whenever any @Observables that were used
-            // inside it changes
-            Rx(() => Text(
-              '${controller.counter}',
-              style: Theme.of(context).textTheme.headline4,
-            )),
-          ],
-        ),
+      ...
+        children: <Widget>[
+          Text(
+            'You have pushed the button this many times:',
+          ),
+          // Use Rx() to link Synaps to Flutter
+          // and update everything inside this lambda
+          // whenever any @Observables that were used
+          // inside it changes
+          Rx(() => Text(
+            '${controller.counter}',
+            style: Theme.of(context).textTheme.headline4,
+          )),
+        ],
       ),
       floatingActionButton: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
           FloatingActionButton(
-            onPressed: _incrementCounter,
+            onPressed: controller.incrementCounter,     // just
             tooltip: 'Increment',
             child: Icon(Icons.add),
           ),
-          SizedBox(width: 15),
           FloatingActionButton(
-            onPressed: _zeroCounter,
+            onPressed: controller.zeroCounter,          // like
             tooltip: 'Zero',
             child: Icon(Icons.settings_backup_restore),
           ),
-          SizedBox(width: 15),
           FloatingActionButton(
-            onPressed: _decrementCounter,
+            onPressed: controller.decrementCounter,     // magic
             tooltip: 'Decrement',
             child: Icon(Icons.remove),
           ),
         ],
       ),
-    );
-  }
-}
+      ...
 
 ```
 
+And finally, it's time to link it to our UI!
+
+Our UI doesn't do the logic for adding and dividing, and it needs to speak with the Counter
+to get the state it needs, and inform the Counter about the operations it needs to do.
+
+Just use `controller` as you would naturally. This library is meant to be used intuitively.
+Everything is converted into setState() under the hood.
+
+This means that when the `Counter.counter` field is updated, the ONLY widget that receives a setState
+is the Rx() widget that contains `Counter.counter`! Granular UI updates. Isn't that amazing?
 
 ### Under the hood
 
-A simple usage example:
+A simple usage example, for the people who are interested in how it looks under the hood:
 
 `example_controller.dart`
 ```dart
