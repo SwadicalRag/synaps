@@ -30,7 +30,7 @@ void main() {
       final hello = Hello().ctx();
 
       var didUpdate = false;
-      SynapsMasterController.monitor(
+      Synaps.monitor(
         monitor: () {
           var stub = hello.imNormal;
         },
@@ -48,7 +48,7 @@ void main() {
       final hello = Hello().ctx();
 
       var didUpdate = false;
-      SynapsMasterController.monitor(
+      Synaps.monitor(
         monitor: () {
           var stub = hello.world;
         },
@@ -66,7 +66,7 @@ void main() {
       final hello = Hello().ctx();
 
       var didUpdate = false;
-      SynapsMasterController.monitor(
+      Synaps.monitor(
         monitor: () {
           var stub = hello.world;
         },
@@ -85,7 +85,7 @@ void main() {
       final hello = Hello().ctx();
 
       var didUpdate = 0;
-      SynapsMasterController.monitor(
+      Synaps.monitor(
         monitor: () {
           var stub = hello.world;
         },
@@ -104,7 +104,7 @@ void main() {
       final hello = Hello().ctx();
 
       var didUpdate = 0;
-      SynapsMasterController.monitor(
+      Synaps.monitor(
         monitor: () {
           var stub = hello.world;
           var stub2 = hello.universe;
@@ -115,7 +115,7 @@ void main() {
       );
 
 
-      SynapsMasterController.transaction(() {
+      Synaps.transaction(() {
         hello.world = "Ultra";
         hello.universe = "Chungus";
         hello.world = "Big";
@@ -128,7 +128,7 @@ void main() {
       final hello = Hello().ctx();
 
       var didUpdate = 0;
-      SynapsMasterController.monitorGranular(
+      Synaps.monitorGranular(
         monitor: () {
           var stub = hello.world;
           var stub2 = hello.universe;
@@ -139,7 +139,7 @@ void main() {
       );
 
 
-      SynapsMasterController.transaction(() {
+      Synaps.transaction(() {
         hello.world = "Ultra";
         hello.universe = "Chungus";
         hello.world = "Big";
@@ -153,7 +153,7 @@ void main() {
       final hello2 = Hello();
 
       var didUpdate = 0;
-      SynapsMasterController.monitorGranular(
+      Synaps.monitorGranular(
         monitor: () {
           var stub = hello.world;
           var stub2 = hello2.universe;
@@ -174,7 +174,7 @@ void main() {
       final hello = Hello().ctx();
 
       var didUpdate = 0;
-      SynapsMasterController.monitor(
+      Synaps.monitor(
         monitor: () {
           var stub = hello.world;
         },
@@ -184,7 +184,7 @@ void main() {
       );
 
 
-      SynapsMasterController.ignore(() {
+      Synaps.ignore(() {
         hello.world = "Big";
         hello.world = "Chungus";
       });
@@ -196,7 +196,7 @@ void main() {
       final hello = Hello().ctx();
 
       var didUpdate = 0;
-      final monitorState = SynapsMasterController.monitor(
+      final monitorState = Synaps.monitor(
         monitor: () {
           var stub = hello.world;
           var stub2 = hello.universe;
@@ -225,7 +225,7 @@ void main() {
       final listTest = ListTest().ctx();
 
       var didUpdate = false;
-      SynapsMasterController.monitor(
+      Synaps.monitor(
         monitor: () {
           var stub = listTest.numberwang[0];
         },
@@ -243,7 +243,7 @@ void main() {
       final listTest = ListTest().ctx();
 
       var didUpdate = false;
-      SynapsMasterController.monitor(
+      Synaps.monitor(
         monitor: () {
           var stub = listTest.numberwang[0];
         },
@@ -263,7 +263,7 @@ void main() {
       final listTest = ListTest().ctx();
 
       var didUpdate = 0;
-      SynapsMasterController.monitor(
+      Synaps.monitor(
         monitor: () {
           // now, I'm told that I'm not allowed to reveal the secret numberwang formula in a public
           // repository, so this placeholder numberwang will have to do.
@@ -311,7 +311,7 @@ void main() {
       final setTest = SetTest().ctx();
 
       var didUpdate = 0;
-      SynapsMasterController.monitor(
+      Synaps.monitor(
         monitor: () {
           if(setTest.isDisgusting()) {
             // disappointment goes here
@@ -344,7 +344,7 @@ void main() {
       final mapTest = MapTest().ctx();
 
       var didUpdate = 0;
-      SynapsMasterController.monitor(
+      Synaps.monitor(
         monitor: () {
           // oh no it's 2 hours before my exam and i have forgotten how to read an ECG!
           // I know, I'll just ask my trusty test suite to explain everything to me!
@@ -369,7 +369,7 @@ void main() {
       final mapTest = MapTest().ctx();
 
       var didUpdate = 0;
-      SynapsMasterController.monitor(
+      Synaps.monitor(
         monitor: () {
           // what does the P wave do again?
 
@@ -409,7 +409,7 @@ void main() {
       final refTest = ReferenceTest().ctx();
 
       var didUpdate = 0;
-      SynapsMasterController.monitor(
+      Synaps.monitor(
         monitor: () {
           var stub = refTest.world;
         },
@@ -429,7 +429,7 @@ void main() {
       final refTest = ReferenceTest().ctx();
 
       var didUpdate = 0;
-      SynapsMasterController.monitor(
+      Synaps.monitor(
         monitor: () {
           var stub = refTest.world;
           var stub2 = refTest.world?.world;
@@ -456,7 +456,7 @@ void main() {
       refTest.world = Hello();
 
       var didUpdate = 0;
-      SynapsMasterController.monitor(
+      Synaps.monitor(
         monitor: () {
           var stub = refTest.world;
           var stub2 = refTest.world.world;

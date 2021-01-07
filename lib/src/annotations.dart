@@ -8,7 +8,7 @@
 /// helper methods, both of which do the same thing.
 /// These helpers convert a regular class into an observable
 /// Controller class which can play nice with
-/// [SynapsMasterController]
+/// [Synaps]
 /// 
 class Controller {
   const Controller();

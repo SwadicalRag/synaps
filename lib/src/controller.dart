@@ -63,7 +63,7 @@ class SynapsControllerInterface {
   /// Called by the generated code's getters to inform synaps
   /// that a field has been accessed.
   void synapsMarkVariableRead(dynamic symbol) {
-    SynapsMasterController.recordVariableRead(symbol, this);
+    Synaps.recordVariableRead(symbol, this);
   }
 
   /// **INTERNAL. DO NOT USE.**
@@ -80,7 +80,7 @@ class SynapsControllerInterface {
     for (final symbol in symbols) {
       _dirtySymbols[symbol] = newValue;
 
-      SynapsMasterController.recordVariableWrite(symbol, this, symbol != symbols.last);
+      Synaps.recordVariableWrite(symbol, this, symbol != symbols.last);
     }
   }
 
@@ -94,7 +94,7 @@ class SynapsControllerInterface {
 
     _dirtySymbols[symbol] = newValue;
 
-    SynapsMasterController.recordVariableWrite(symbol, this, noPlayback);
+    Synaps.recordVariableWrite(symbol, this, noPlayback);
   }
 
   /// Adds a listener to this controller.

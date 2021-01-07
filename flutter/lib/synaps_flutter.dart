@@ -33,7 +33,7 @@ class RxState extends State<Rx> {
 
     Widget out;
 
-    _monitorState = SynapsMasterController.monitor(
+    _monitorState = Synaps.monitor(
       monitor: () {
         out = widget._buildFunc();
       },

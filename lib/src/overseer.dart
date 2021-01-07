@@ -105,7 +105,7 @@ class SynapsMonitorState {
   /// monitorState.addRunOnceListener(controller, Symbol("wow"), listener);
   /// monitorState.addRunOnceListener(controller, Symbol("hooh"), listener);
   /// 
-  /// SynapsMasterController.transaction(() {
+  /// Synaps.transaction(() {
   ///   controller.wow = "something";
   ///   controller.hooh = "something else";
   /// });
@@ -187,13 +187,13 @@ class SynapsMonitorState {
   }
 }
 
-/// The Synaps master controller
+/// The Synaps overseer
 /// 
 /// It contains some global state to keep track of every single
 /// field write/read, and houses the Public API to consume
 /// the read/write events.
 /// 
-class SynapsMasterController {
+class Synaps {
   static final _masterPlaybackState = SynapsPlaybackState();
   static final _recorderStateStack = <SynapsRecorderState>[];
   static final _playbackStateStack = <SynapsPlaybackState>[];
@@ -235,8 +235,8 @@ class SynapsMasterController {
   /// should *only* be called by [SynapsControllerInterface]
   /// 
   /// **USE THE PUBLIC API INSTEAD**
-  /// See [SynapsMasterController.transaction], [SynapsMasterController.monitor], 
-  ///  [SynapsMasterController.monitorGranular], or [SynapsMasterController.ignore]
+  /// See [Synaps.transaction], [Synaps.monitor], 
+  ///  [Synaps.monitorGranular], or [Synaps.ignore]
   /// 
   /// Used by [SynapsControllerInterface] to save variable reads to the current
   /// recorder state
@@ -255,8 +255,8 @@ class SynapsMasterController {
   /// should *only* be called by [SynapsControllerInterface]
   /// 
   /// **USE THE PUBLIC API INSTEAD**
-  /// See [SynapsMasterController.transaction], [SynapsMasterController.monitor], 
-  ///  [SynapsMasterController.monitorGranular], or [SynapsMasterController.ignore]
+  /// See [Synaps.transaction], [Synaps.monitor], 
+  ///  [Synaps.monitorGranular], or [Synaps.ignore]
   /// 
   /// Used by Public API to start saving variable 
   /// reads to the current recorder state
@@ -271,8 +271,8 @@ class SynapsMasterController {
   /// should *only* be called by [SynapsControllerInterface]
   /// 
   /// **USE THE PUBLIC API INSTEAD**
-  /// See [SynapsMasterController.transaction], [SynapsMasterController.monitor], 
-  ///  [SynapsMasterController.monitorGranular], or [SynapsMasterController.ignore]
+  /// See [Synaps.transaction], [Synaps.monitor], 
+  ///  [Synaps.monitorGranular], or [Synaps.ignore]
   /// 
   /// Used by the Public API to stop saving variable 
   /// reads to the current recorder state
@@ -289,8 +289,8 @@ class SynapsMasterController {
   /// should *only* be called by [SynapsControllerInterface]
   /// 
   /// **USE THE PUBLIC API INSTEAD**
-  /// See [SynapsMasterController.transaction], [SynapsMasterController.monitor], 
-  ///  [SynapsMasterController.monitorGranular], or [SynapsMasterController.ignore]
+  /// See [Synaps.transaction], [Synaps.monitor], 
+  ///  [Synaps.monitorGranular], or [Synaps.ignore]
   /// 
   /// Used by [SynapsControllerInterface] to save variable writes to the current
   /// playback state
@@ -311,8 +311,8 @@ class SynapsMasterController {
   /// should *only* be called by [SynapsControllerInterface]
   /// 
   /// **USE THE PUBLIC API INSTEAD**
-  /// See [SynapsMasterController.transaction], [SynapsMasterController.monitor], 
-  ///  [SynapsMasterController.monitorGranular], or [SynapsMasterController.ignore]
+  /// See [Synaps.transaction], [Synaps.monitor], 
+  ///  [Synaps.monitorGranular], or [Synaps.ignore]
   /// 
   /// Used by the Public API to start saving variable 
   /// writes to the current recorder state
@@ -328,8 +328,8 @@ class SynapsMasterController {
   /// should *only* be called by [SynapsControllerInterface]
   /// 
   /// **USE THE PUBLIC API INSTEAD**
-  /// See [SynapsMasterController.transaction], [SynapsMasterController.monitor], 
-  ///  [SynapsMasterController.monitorGranular], or [SynapsMasterController.ignore]
+  /// See [Synaps.transaction], [Synaps.monitor], 
+  ///  [Synaps.monitorGranular], or [Synaps.ignore]
   /// 
   /// Used by the Public API to stop saving variable 
   /// writes to the current recorder state
@@ -345,8 +345,8 @@ class SynapsMasterController {
   /// should *only* be called by [SynapsControllerInterface]
   /// 
   /// **USE THE PUBLIC API INSTEAD**
-  /// See [SynapsMasterController.transaction], [SynapsMasterController.monitor], 
-  ///  [SynapsMasterController.monitorGranular], or [SynapsMasterController.ignore]
+  /// See [Synaps.transaction], [Synaps.monitor], 
+  ///  [Synaps.monitorGranular], or [Synaps.ignore]
   /// 
   /// Used by the Public API to start the logic to call each listener
   /// inside each [SynapsControllerInterface] 
