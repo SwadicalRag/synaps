@@ -262,7 +262,7 @@ global variable if you truly wanted to.
 
 In this example, we have initialised the Counter into a StatelessWidget.
 If you want to access this controller from a child widget, you can use whatever method you want
-InheritedWidgets, passing the controller as a constructor argument to a child widget, or
+like InheritedWidgets, passing the controller as a constructor argument to a child widget, or
 even just using global variables and importing it into the file you want to use it in.
 
 Each method has its own strengths and weaknesses, the discussion of which is not in
