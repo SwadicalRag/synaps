@@ -7,3 +7,7 @@ T Tx<T>(T Function() fn) {
 T Ix<T>(T Function() fn) {
   return SynapsMasterController.ignore(fn);
 }
+
+MonitorState Mx(SynapsMonitorFunction monitor,SynapsMonitorCallbackFunction onUpdate) {
+  return SynapsMasterController.monitor(monitor: monitor, onUpdate: onUpdate);
+}
