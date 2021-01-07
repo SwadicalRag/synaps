@@ -67,10 +67,10 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
       if(filteredMixins.isNotEmpty) {
         final mixinList = filteredMixins.map((mxn) => mxn.getDisplayString(withNullability: false)).join(",");
 
-        buffer.write("with ControllerInterface,${mixinList} ");
+        buffer.write("with SynapsControllerInterface,${mixinList} ");
       }
       else {
-        buffer.write("with ControllerInterface ");
+        buffer.write("with SynapsControllerInterface ");
       }
       buffer.writeln("{");
       buffer.writeln("final ${parentClassName}${templates} _internal;");

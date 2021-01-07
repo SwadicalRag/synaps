@@ -6,7 +6,7 @@ part of 'main.dart';
 // ObservableGenerator
 // **************************************************************************
 
-class _CounterStateController extends CounterState with ControllerInterface {
+class _CounterStateController extends CounterState with SynapsControllerInterface {
   final CounterState _internal;
   @override
   int get counter {

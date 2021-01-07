@@ -30,7 +30,7 @@ class SynapsSetIterator<T> extends Iterator<T> {
   }
 }
 
-class SynapsSet<T> extends SetMixin<T> with ControllerInterface {
+class SynapsSet<T> extends SetMixin<T> with SynapsControllerInterface {
   final Set<T> _internal;
 
   SynapsSet([this._internal = const {}]);
@@ -46,7 +46,7 @@ class SynapsSet<T> extends SetMixin<T> with ControllerInterface {
     final changed = _internal.add(value);
     if(changed) {
       synapsMarkVariableDirty(value,value,true);
-      synapsMarkVariableDirty(ControllerInterface.LENGTH_ORACLE,_internal.length);
+      synapsMarkVariableDirty(SynapsControllerInterface.LENGTH_ORACLE,_internal.length);
     }
     return changed;
   }
@@ -61,8 +61,8 @@ class SynapsSet<T> extends SetMixin<T> with ControllerInterface {
   bool remove(Object value) {
     final changed = _internal.remove(value);
     if(changed) {
-      synapsMarkVariableDirty(value,ControllerInterface.NULL_ORACLE,true);
-      synapsMarkVariableDirty(ControllerInterface.LENGTH_ORACLE,_internal.length);
+      synapsMarkVariableDirty(value,SynapsControllerInterface.NULL_ORACLE,true);
+      synapsMarkVariableDirty(SynapsControllerInterface.LENGTH_ORACLE,_internal.length);
     }
     return changed;
   }
@@ -79,7 +79,7 @@ class SynapsSet<T> extends SetMixin<T> with ControllerInterface {
 
   @override
   int get length {
-    synapsMarkVariableRead(ControllerInterface.LENGTH_ORACLE);
+    synapsMarkVariableRead(SynapsControllerInterface.LENGTH_ORACLE);
     return _internal.length;
   }
 }

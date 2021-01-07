@@ -6,7 +6,7 @@ part of 'example_controller.dart';
 // ObservableGenerator
 // **************************************************************************
 
-class _CounterController extends Counter with ControllerInterface {
+class _CounterController extends Counter with SynapsControllerInterface {
   final Counter _internal;
   @override
   int get clk {

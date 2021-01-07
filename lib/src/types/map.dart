@@ -40,7 +40,7 @@ class SynapsMapKeysIterable<K,V> extends Iterable<K> {
   Iterator<K> get iterator => SynapsMapKeysIterator<K,V>(_synapsMap,_internalMap);
 }
 
-class SynapsMap<K,V> extends MapMixin<K,V> with ControllerInterface {
+class SynapsMap<K,V> extends MapMixin<K,V> with SynapsControllerInterface {
   final Map<K,V> _internal;
 
   Iterable<K> _keysInternal;
@@ -61,14 +61,14 @@ class SynapsMap<K,V> extends MapMixin<K,V> with ControllerInterface {
 
     if(oldValue != value) {
       synapsMarkVariableDirty(index,value,true);
-      synapsMarkVariableDirty(ControllerInterface.KEYS_ORACLE,_internal.length,true);
-      synapsMarkVariableDirty(ControllerInterface.LENGTH_ORACLE,_internal.length);
+      synapsMarkVariableDirty(SynapsControllerInterface.KEYS_ORACLE,_internal.length,true);
+      synapsMarkVariableDirty(SynapsControllerInterface.LENGTH_ORACLE,_internal.length);
     }
   }
 
   @override
   void clear() {
-    synapsMarkEverythingDirty(ControllerInterface.NULL_ORACLE);
+    synapsMarkEverythingDirty(SynapsControllerInterface.NULL_ORACLE);
     _internal.clear();
   }
 
@@ -76,22 +76,22 @@ class SynapsMap<K,V> extends MapMixin<K,V> with ControllerInterface {
   V remove(Object key) {
     final removed = _internal.remove(key);
     if(removed != null) {
-      synapsMarkVariableDirty(key,ControllerInterface.NULL_ORACLE,true);
-      synapsMarkVariableDirty(ControllerInterface.KEYS_ORACLE,_internal.length,true);
-      synapsMarkVariableDirty(ControllerInterface.LENGTH_ORACLE,_internal.length);
+      synapsMarkVariableDirty(key,SynapsControllerInterface.NULL_ORACLE,true);
+      synapsMarkVariableDirty(SynapsControllerInterface.KEYS_ORACLE,_internal.length,true);
+      synapsMarkVariableDirty(SynapsControllerInterface.LENGTH_ORACLE,_internal.length);
     }
     return removed;
   }
 
   @override
   int get length {
-    synapsMarkVariableRead(ControllerInterface.LENGTH_ORACLE);
+    synapsMarkVariableRead(SynapsControllerInterface.LENGTH_ORACLE);
     return _internal.length;
   }
 
   @override
   Iterable<K> get keys {
-    synapsMarkVariableRead(ControllerInterface.KEYS_ORACLE);
+    synapsMarkVariableRead(SynapsControllerInterface.KEYS_ORACLE);
     return _keysInternal;
   }
 }

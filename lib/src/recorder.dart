@@ -3,7 +3,7 @@ import "package:meta/meta.dart";
 
 typedef void SynapsTransactionFunction();
 typedef void SynapsMonitorFunction();
-typedef void SynapsMonitorGranularCallbackFunction(ControllerInterface interface, dynamic symbol,dynamic newValue);
+typedef void SynapsMonitorGranularCallbackFunction(SynapsControllerInterface interface, dynamic symbol,dynamic newValue);
 typedef void SynapsMonitorCallbackFunction();
 
 /// what to do when a variable is read from
@@ -17,7 +17,7 @@ enum SynapsRecorderMode {
 
 class SynapsRecorderState {
   /// Map of Interfaces to a Set of Symbols that were read from
-  final Map<ControllerInterface,Set<dynamic>> internalState = {};
+  final Map<SynapsControllerInterface,Set<dynamic>> internalState = {};
   SynapsRecorderMode mode = SynapsRecorderMode.VOID;
 }
 
@@ -35,14 +35,14 @@ enum SynapsPlaybackMode {
 
 class SynapsPlaybackState {
   /// Map of Interfaces to a Set of Symbols that were written to
-  final Map<ControllerInterface,Set<dynamic>> internalState = {};
+  final Map<SynapsControllerInterface,Set<dynamic>> internalState = {};
   SynapsPlaybackMode mode = SynapsPlaybackMode.LIVE;
 }
 
-/// The MonitorState is used to manage each listener callback linked to a ControllerInterface
+/// The MonitorState is used to manage each listener callback linked to a SynapsControllerInterface
 class MonitorState {
-  final Map<ControllerInterface,Map<dynamic,Set<SynapsListenerFunction>>> _listeners = {};
-  final Map<ControllerInterface,Map<dynamic,Set<SynapsRunOnceListenerFunction>>> _runOnceListeners = {};
+  final Map<SynapsControllerInterface,Map<dynamic,Set<SynapsListenerFunction>>> _listeners = {};
+  final Map<SynapsControllerInterface,Map<dynamic,Set<SynapsRunOnceListenerFunction>>> _runOnceListeners = {};
 
   /// Set to true when this MonitorState attaches a listener for the first time,
   /// and does not change afterwards at all.
@@ -55,7 +55,7 @@ class MonitorState {
   ///   print("controller.wow was updated to ${newValue}!");
   /// })
   /// ```
-  void addListener<T>(ControllerInterface interface,dynamic symbol,SynapsListenerFunction<T> listener) {
+  void addListener<T>(SynapsControllerInterface interface,dynamic symbol,SynapsListenerFunction<T> listener) {
     if(!_listeners.containsKey(interface)) {
       _listeners[interface] = {};
     }
@@ -81,7 +81,7 @@ class MonitorState {
   /// monitorState.removeListener(controller, Symbol("wow"), listener);
   /// 
   /// ```
-  void removeListener<T>(ControllerInterface interface,dynamic symbol,SynapsListenerFunction<T> listener) {
+  void removeListener<T>(SynapsControllerInterface interface,dynamic symbol,SynapsListenerFunction<T> listener) {
     if(_listeners.containsKey(interface)) {
       if(_listeners[interface].containsKey(symbol)) {
         _listeners[interface][symbol].remove(listener);
@@ -112,7 +112,7 @@ class MonitorState {
   /// 
   /// /// `listener` is only called once!
   /// ```
-  void addRunOnceListener(ControllerInterface interface,dynamic symbol,SynapsRunOnceListenerFunction listener) {
+  void addRunOnceListener(SynapsControllerInterface interface,dynamic symbol,SynapsRunOnceListenerFunction listener) {
     if(!_runOnceListeners.containsKey(interface)) {
       _runOnceListeners[interface] = {};
     }
@@ -138,7 +138,7 @@ class MonitorState {
   /// monitorState.removeRunOnceListener(controller, Symbol("wow"), listener);
   /// 
   /// ```
-  void removeRunOnceListener(ControllerInterface interface,dynamic symbol,SynapsRunOnceListenerFunction listener) {
+  void removeRunOnceListener(SynapsControllerInterface interface,dynamic symbol,SynapsRunOnceListenerFunction listener) {
     if(_runOnceListeners.containsKey(interface)) {
       if(_runOnceListeners[interface].containsKey(symbol)) {
         _runOnceListeners[interface][symbol].remove(listener);
@@ -232,15 +232,15 @@ class SynapsMasterController {
 
 
   /// **INTERNAL. DO NOT USE.**
-  /// should *only* be called by [ControllerInterface]
+  /// should *only* be called by [SynapsControllerInterface]
   /// 
   /// **USE THE PUBLIC API INSTEAD**
   /// See [SynapsMasterController.transaction], [SynapsMasterController.monitor], 
   ///  [SynapsMasterController.monitorGranular], or [SynapsMasterController.ignore]
   /// 
-  /// Used by [ControllerInterface] to save variable reads to the current
+  /// Used by [SynapsControllerInterface] to save variable reads to the current
   /// recorder state
-  static void recordVariableRead(dynamic symbol,ControllerInterface interface) {
+  static void recordVariableRead(dynamic symbol,SynapsControllerInterface interface) {
     if(isRecording) {
       if(!_recorderState.internalState.containsKey(interface)) {
         _recorderState.internalState[interface] = {};
@@ -252,7 +252,7 @@ class SynapsMasterController {
 
 
   /// **INTERNAL. DO NOT USE.**
-  /// should *only* be called by [ControllerInterface]
+  /// should *only* be called by [SynapsControllerInterface]
   /// 
   /// **USE THE PUBLIC API INSTEAD**
   /// See [SynapsMasterController.transaction], [SynapsMasterController.monitor], 
@@ -268,7 +268,7 @@ class SynapsMasterController {
 
 
   /// **INTERNAL. DO NOT USE.**
-  /// should *only* be called by [ControllerInterface]
+  /// should *only* be called by [SynapsControllerInterface]
   /// 
   /// **USE THE PUBLIC API INSTEAD**
   /// See [SynapsMasterController.transaction], [SynapsMasterController.monitor], 
@@ -286,16 +286,16 @@ class SynapsMasterController {
 
 
   /// **INTERNAL. DO NOT USE.**
-  /// should *only* be called by [ControllerInterface]
+  /// should *only* be called by [SynapsControllerInterface]
   /// 
   /// **USE THE PUBLIC API INSTEAD**
   /// See [SynapsMasterController.transaction], [SynapsMasterController.monitor], 
   ///  [SynapsMasterController.monitorGranular], or [SynapsMasterController.ignore]
   /// 
-  /// Used by [ControllerInterface] to save variable writes to the current
+  /// Used by [SynapsControllerInterface] to save variable writes to the current
   /// playback state
   /// 
-  static void recordVariableWrite(dynamic symbol,ControllerInterface interface, [bool noPlayback = false]) {
+  static void recordVariableWrite(dynamic symbol,SynapsControllerInterface interface, [bool noPlayback = false]) {
     if(!_playbackState.internalState.containsKey(interface)) {
       _playbackState.internalState[interface] = {};
     }
@@ -308,7 +308,7 @@ class SynapsMasterController {
 
 
   /// **INTERNAL. DO NOT USE.**
-  /// should *only* be called by [ControllerInterface]
+  /// should *only* be called by [SynapsControllerInterface]
   /// 
   /// **USE THE PUBLIC API INSTEAD**
   /// See [SynapsMasterController.transaction], [SynapsMasterController.monitor], 
@@ -325,7 +325,7 @@ class SynapsMasterController {
 
 
   /// **INTERNAL. DO NOT USE.**
-  /// should *only* be called by [ControllerInterface]
+  /// should *only* be called by [SynapsControllerInterface]
   /// 
   /// **USE THE PUBLIC API INSTEAD**
   /// See [SynapsMasterController.transaction], [SynapsMasterController.monitor], 
@@ -342,14 +342,14 @@ class SynapsMasterController {
   }
 
   /// **INTERNAL. DO NOT USE.**
-  /// should *only* be called by [ControllerInterface]
+  /// should *only* be called by [SynapsControllerInterface]
   /// 
   /// **USE THE PUBLIC API INSTEAD**
   /// See [SynapsMasterController.transaction], [SynapsMasterController.monitor], 
   ///  [SynapsMasterController.monitorGranular], or [SynapsMasterController.ignore]
   /// 
   /// Used by the Public API to start the logic to call each listener
-  /// inside each [ControllerInterface] 
+  /// inside each [SynapsControllerInterface] 
   /// 
   static void doPlayback() {
     final lastMode = _playbackState.mode;

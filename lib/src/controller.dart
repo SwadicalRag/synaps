@@ -16,37 +16,37 @@ class SynapsOracle {
   /// 
   /// This is because null values, when assigned to
   /// maps (which are used extensively in synaps), will not iterate correctly.
-  static SynapsOracle get NULL => ControllerInterface.NULL_ORACLE;
+  static SynapsOracle get NULL => SynapsControllerInterface.NULL_ORACLE;
 
   /// This value is passed in as `newValue` for `controller.length` 
   /// 
   /// This is because some special controllers like sets/maps can use
   /// Symbols as their keys/values, and can lead to ambiguity when
   /// using the Listener API
-  static SynapsOracle get LENGTH => ControllerInterface.LENGTH_ORACLE;
+  static SynapsOracle get LENGTH => SynapsControllerInterface.LENGTH_ORACLE;
 
   /// This value is passed in as `newValue` for `controller.keys` 
   /// 
   /// This is because some special controllers like sets/maps can use
   /// Symbols as their keys/values, and can lead to ambiguity when
   /// using the Listener API
-  static SynapsOracle get KEYS => ControllerInterface.KEYS_ORACLE;
+  static SynapsOracle get KEYS => SynapsControllerInterface.KEYS_ORACLE;
 
   /// True if this oracle represents the `null` value
-  bool get isNull => identical(this,ControllerInterface.NULL_ORACLE);
+  bool get isNull => identical(this,SynapsControllerInterface.NULL_ORACLE);
 
   /// True if this oracle represents the `length` field
-  bool get isLength => identical(this,ControllerInterface.LENGTH_ORACLE);
+  bool get isLength => identical(this,SynapsControllerInterface.LENGTH_ORACLE);
 
   /// True if this oracle represents the `keys` field
-  bool get isKeys => identical(this,ControllerInterface.KEYS_ORACLE);
+  bool get isKeys => identical(this,SynapsControllerInterface.KEYS_ORACLE);
 }
 
 class _NULL_ORACLE extends SynapsOracle {}
 class _LENGTH_ORACLE extends SynapsOracle {}
 class _KEYS_ORACLE extends SynapsOracle {}
 
-class ControllerInterface {
+class SynapsControllerInterface {
   static final NULL_ORACLE = _NULL_ORACLE();
   static final LENGTH_ORACLE = _LENGTH_ORACLE();
   static final KEYS_ORACLE = _KEYS_ORACLE();
@@ -120,7 +120,7 @@ class ControllerInterface {
   /// [synapsAddListener] requires a "symbol" to figure out what to listen to.
   /// A symbol is a way to represent the field, key or entry that is being changed.
   /// 
-  /// In a ControllerInterface for a class, this "symbol" will be an actual
+  /// In a SynapsControllerInterface for a class, this "symbol" will be an actual
   /// [Symbol] of the field itself. That is, given `someClass.someField`,
   /// and the aim is to listen to `someField`, the symbol will be
   ///  `Symbol("someField")`
