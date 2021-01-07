@@ -39,12 +39,12 @@ class SynapsPlaybackState {
   SynapsPlaybackMode mode = SynapsPlaybackMode.LIVE;
 }
 
-/// The MonitorState is used to manage each listener callback linked to a SynapsControllerInterface
-class MonitorState {
+/// The SynapsMonitorState is used to manage each listener callback linked to a SynapsControllerInterface
+class SynapsMonitorState {
   final Map<SynapsControllerInterface,Map<dynamic,Set<SynapsListenerFunction>>> _listeners = {};
   final Map<SynapsControllerInterface,Map<dynamic,Set<SynapsRunOnceListenerFunction>>> _runOnceListeners = {};
 
-  /// Set to true when this MonitorState attaches a listener for the first time,
+  /// Set to true when this SynapsMonitorState attaches a listener for the first time,
   /// and does not change afterwards at all.
   bool hasCapturedSymbols = false;
 
@@ -148,7 +148,7 @@ class MonitorState {
     interface.synapsRemoveRunOnceListener(symbol, listener);
   }
 
-  /// Removes all listeners registered in this MonitorState
+  /// Removes all listeners registered in this SynapsMonitorState
   void removeAllListeners() {
     for(final interface in _listeners.keys) {
       final symbolMap = _listeners[interface];
@@ -164,7 +164,7 @@ class MonitorState {
     _listeners.clear();
   }
 
-  /// Removes all runOnceListeners registered in this MonitorState
+  /// Removes all runOnceListeners registered in this SynapsMonitorState
   void removeAllRunOnceListeners() {
     for(final interface in _runOnceListeners.keys) {
       final symbolMap = _runOnceListeners[interface];
@@ -180,7 +180,7 @@ class MonitorState {
     _runOnceListeners.clear();
   }
 
-  /// Internally removes all kinds of listeners registered with this MonitorState
+  /// Internally removes all kinds of listeners registered with this SynapsMonitorState
   void dispose() {
     removeAllListeners();
     removeAllRunOnceListeners();
@@ -385,15 +385,15 @@ class SynapsMasterController {
   /// Calls the given function `monitor`, but and records any variable reads
   /// while that function executes.
   /// 
-  /// ***You should call [MonitorState.dispose] once finished with monitoring***
+  /// ***You should call [SynapsMonitorState.dispose] once finished with monitoring***
   /// 
   /// Will call `onUpdate` for every subsequent single variable that is updated.
   /// 
   /// i.e. if three variables are updated in a single playback, then `onUpdate` will
   /// be called three times, once for each variable
   /// 
-  static MonitorState monitorGranular({@required SynapsMonitorFunction monitor,@required SynapsMonitorGranularCallbackFunction onUpdate}) {
-    final state = MonitorState();
+  static SynapsMonitorState monitorGranular({@required SynapsMonitorFunction monitor,@required SynapsMonitorGranularCallbackFunction onUpdate}) {
+    final state = SynapsMonitorState();
 
     startRecording(SynapsRecorderMode.RECORD);
 
@@ -421,15 +421,15 @@ class SynapsMasterController {
   /// Calls the given function `monitor`, but and records any variable reads
   /// while that function executes.
   /// 
-  /// ***You should call [MonitorState.dispose] once finished with monitoring***
+  /// ***You should call [SynapsMonitorState.dispose] once finished with monitoring***
   /// 
   /// Will call `onUpdate` when at most once per update
   /// 
   /// i.e. if three variables are updated in a single playback, then `onUpdate` will
   /// be called once
   /// 
-  static MonitorState monitor({@required SynapsMonitorFunction monitor,@required SynapsMonitorCallbackFunction onUpdate}) {
-    final state = MonitorState();
+  static SynapsMonitorState monitor({@required SynapsMonitorFunction monitor,@required SynapsMonitorCallbackFunction onUpdate}) {
+    final state = SynapsMonitorState();
 
     startRecording(SynapsRecorderMode.RECORD);
 

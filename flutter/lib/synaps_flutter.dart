@@ -14,7 +14,7 @@ class Rx extends StatefulWidget {
 }
 
 class RxState extends State<Rx> {
-  MonitorState _monitorState;
+  SynapsMonitorState _monitorState;
 
   @override
   dispose() {

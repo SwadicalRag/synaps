@@ -192,7 +192,7 @@ void main() {
       expect(didUpdate,equals(0));
     });
 
-    test(".monitor() should not trigger onUpdate after MonitorState.dispose()", () {
+    test(".monitor() should not trigger onUpdate after SynapsMonitorState.dispose()", () {
       final hello = Hello().ctx();
 
       var didUpdate = 0;
