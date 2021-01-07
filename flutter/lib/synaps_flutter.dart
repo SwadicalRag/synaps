@@ -34,7 +34,7 @@ class RxState extends State<Rx> {
     Widget out;
 
     _monitorState = Synaps.monitor(
-      monitor: () {
+      capture: () {
         out = widget._buildFunc();
       },
       onUpdate: () {

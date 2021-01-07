@@ -392,13 +392,13 @@ class Synaps {
   /// i.e. if three variables are updated in a single playback, then `onUpdate` will
   /// be called three times, once for each variable
   /// 
-  static SynapsMonitorState monitorGranular({@required SynapsMonitorFunction monitor,@required SynapsMonitorGranularCallbackFunction onUpdate}) {
+  static SynapsMonitorState monitorGranular({@required SynapsMonitorFunction capture,@required SynapsMonitorGranularCallbackFunction onUpdate}) {
     final state = SynapsMonitorState();
 
     startRecording(SynapsRecorderMode.RECORD);
 
     try {
-      monitor();
+      capture();
 
       for(final interface in _recorderState.internalState.keys) {
         final symbols = _recorderState.internalState[interface];
@@ -428,13 +428,13 @@ class Synaps {
   /// i.e. if three variables are updated in a single playback, then `onUpdate` will
   /// be called once
   /// 
-  static SynapsMonitorState monitor({@required SynapsMonitorFunction monitor,@required SynapsMonitorCallbackFunction onUpdate}) {
+  static SynapsMonitorState monitor({@required SynapsMonitorFunction capture,@required SynapsMonitorCallbackFunction onUpdate}) {
     final state = SynapsMonitorState();
 
     startRecording(SynapsRecorderMode.RECORD);
 
     try {
-      monitor();
+      capture();
 
       for(final interface in _recorderState.internalState.keys) {
         final symbols = _recorderState.internalState[interface];

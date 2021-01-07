@@ -12,7 +12,7 @@ void main() {
   final counter = Counter().ctx();
 
   Synaps.monitor(
-    monitor: () {
+    capture: () {
       print("Initial value of counter is ${counter.clk}");
     },
     onUpdate: () {

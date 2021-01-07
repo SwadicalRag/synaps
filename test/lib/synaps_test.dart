@@ -31,7 +31,7 @@ void main() {
 
       var didUpdate = false;
       Synaps.monitor(
-        monitor: () {
+        capture: () {
           var stub = hello.imNormal;
         },
         onUpdate: () {
@@ -49,7 +49,7 @@ void main() {
 
       var didUpdate = false;
       Synaps.monitor(
-        monitor: () {
+        capture: () {
           var stub = hello.world;
         },
         onUpdate: () {
@@ -67,7 +67,7 @@ void main() {
 
       var didUpdate = false;
       Synaps.monitor(
-        monitor: () {
+        capture: () {
           var stub = hello.world;
         },
         onUpdate: () {
@@ -86,7 +86,7 @@ void main() {
 
       var didUpdate = 0;
       Synaps.monitor(
-        monitor: () {
+        capture: () {
           var stub = hello.world;
         },
         onUpdate: () {
@@ -105,7 +105,7 @@ void main() {
 
       var didUpdate = 0;
       Synaps.monitor(
-        monitor: () {
+        capture: () {
           var stub = hello.world;
           var stub2 = hello.universe;
         },
@@ -129,7 +129,7 @@ void main() {
 
       var didUpdate = 0;
       Synaps.monitorGranular(
-        monitor: () {
+        capture: () {
           var stub = hello.world;
           var stub2 = hello.universe;
         },
@@ -154,7 +154,7 @@ void main() {
 
       var didUpdate = 0;
       Synaps.monitorGranular(
-        monitor: () {
+        capture: () {
           var stub = hello.world;
           var stub2 = hello2.universe;
         },
@@ -175,7 +175,7 @@ void main() {
 
       var didUpdate = 0;
       Synaps.monitor(
-        monitor: () {
+        capture: () {
           var stub = hello.world;
         },
         onUpdate: () {
@@ -197,7 +197,7 @@ void main() {
 
       var didUpdate = 0;
       final monitorState = Synaps.monitor(
-        monitor: () {
+        capture: () {
           var stub = hello.world;
           var stub2 = hello.universe;
         },
@@ -226,7 +226,7 @@ void main() {
 
       var didUpdate = false;
       Synaps.monitor(
-        monitor: () {
+        capture: () {
           var stub = listTest.numberwang[0];
         },
         onUpdate: () {
@@ -244,7 +244,7 @@ void main() {
 
       var didUpdate = false;
       Synaps.monitor(
-        monitor: () {
+        capture: () {
           var stub = listTest.numberwang[0];
         },
         onUpdate: () {
@@ -264,7 +264,7 @@ void main() {
 
       var didUpdate = 0;
       Synaps.monitor(
-        monitor: () {
+        capture: () {
           // now, I'm told that I'm not allowed to reveal the secret numberwang formula in a public
           // repository, so this placeholder numberwang will have to do.
           // To the person who is reading this, I am sorry.
@@ -312,7 +312,7 @@ void main() {
 
       var didUpdate = 0;
       Synaps.monitor(
-        monitor: () {
+        capture: () {
           if(setTest.isDisgusting()) {
             // disappointment goes here
           }
@@ -345,7 +345,7 @@ void main() {
 
       var didUpdate = 0;
       Synaps.monitor(
-        monitor: () {
+        capture: () {
           // oh no it's 2 hours before my exam and i have forgotten how to read an ECG!
           // I know, I'll just ask my trusty test suite to explain everything to me!
 
@@ -370,7 +370,7 @@ void main() {
 
       var didUpdate = 0;
       Synaps.monitor(
-        monitor: () {
+        capture: () {
           // what does the P wave do again?
 
           final pWave = mapTest.ecgWaves["P"];
@@ -410,7 +410,7 @@ void main() {
 
       var didUpdate = 0;
       Synaps.monitor(
-        monitor: () {
+        capture: () {
           var stub = refTest.world;
         },
         onUpdate: () {
@@ -430,7 +430,7 @@ void main() {
 
       var didUpdate = 0;
       Synaps.monitor(
-        monitor: () {
+        capture: () {
           var stub = refTest.world;
           var stub2 = refTest.world?.world;
         },
@@ -457,7 +457,7 @@ void main() {
 
       var didUpdate = 0;
       Synaps.monitor(
-        monitor: () {
+        capture: () {
           var stub = refTest.world;
           var stub2 = refTest.world.world;
         },

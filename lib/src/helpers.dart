@@ -8,6 +8,6 @@ T Ix<T>(T Function() fn) {
   return Synaps.ignore(fn);
 }
 
-SynapsMonitorState Mx(SynapsMonitorFunction monitor,SynapsMonitorCallbackFunction onUpdate) {
-  return Synaps.monitor(monitor: monitor, onUpdate: onUpdate);
+SynapsMonitorState Mx(SynapsMonitorFunction capture,SynapsMonitorCallbackFunction onUpdate) {
+  return Synaps.monitor(capture: capture, onUpdate: onUpdate);
 }
