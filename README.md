@@ -257,7 +257,7 @@ class MyHomePage extends StatelessWidget {
 ```
 
 Then, we need to initialise the controller that you defined above. There are no
-restricitons on where this should be done. You can initialise a controller into a 
+restrictions on where this should be done. You can initialise a controller into a 
 global variable if you truly wanted to.
 
 In this example, we have initialised the Counter into a StatelessWidget.
