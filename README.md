@@ -117,6 +117,76 @@ Synaps is designed to enable "glue" code to record whatever fields you access ou
 
 This means that a pre-written class with a bunch of fields, can be instantly used in UI (with the help of some higher level abstractions e.g. `synaps_flutter`).
 
+## What's different? What's new?
+
+Here's a quick run-down of just the important additions in synaps
+
+### `synaps`
+
+#### Decorators
+
+##### `@Controller()`
+
+When a class is annotated with a @Controller, 
+it gains the ability to host observable fields
+This is done through a precompiled dart file that
+converts every field in the class into a getter/setter.
+The class then gains the `.toController()` and `.ctx()`
+helper methods, both of which do the same thing.
+These helpers convert a regular class into an observable
+Controller class which can play nice with Synaps.
+
+##### `@Observable()`
+When a field of a @Controller class is marked with @Observable,
+it gains the ability to track whenever that specific field is modified and/or read from. Internally, this gives hints to the `source_gen` generator to insert calls to the Synaps library to track field reads/writes
+
+#### Classes / Methods
+
+##### `Synaps`
+The Synaps overseer
+
+It contains some global state to keep track of every single
+field write/read, and houses the Public API to consume
+the read/write events.
+
+##### `SynapsMonitorState Synaps.monitor({Function capture, Function onUpdate})` / alias: `Mx()`
+
+NB: If you are using `synaps_flutter`, you will never need to directly use Synaps' public API.
+See `Rx` below.
+
+Calls the given function `capture`, and records any variable reads
+while that function executes.
+
+In the future, when any captured variable is updated by any code, `onUpdate`
+will be called at most once per update/transaction
+
+### `synaps_flutter`
+
+#### Classes / Methods
+
+##### Rx
+A stateful widget that wraps Synaps.
+It takes a build function as its constructor parameter.
+
+In Flutter, UI = f(state);
+
+If your state consists of one variable, then things stay simple.
+However, if your state consists of multiple variables, like
+nose color, facepaint color, honk loudness, etc. you end up with
+`UI = f(var1,var2,var3,var4,...);`
+
+Sometimes this is unavoidable. In the real world using other
+solutions, it may be necessary to write extensive boilerplate code
+to facilitate `f(var1,var2,...)`. Rx() instead opts to identify the
+arguments of `f()` automatically, and hook setState up to changes
+in any of the aforementioned arguments.
+
+When the build method of the widget inside Rx() runs, Synaps
+records any Observable() fields that were *accessed* by the
+build method, and attaches listeners to each field. This means that whenever a field relevant to the build method is updated, 
+setState() is called, invalidating the widget, and hinting to
+Flutter that a rebuild would likely change the UI.
+
 ## Usage
 
 Coming soon once the API is stable. Until then, if you are truly truly desperate, you can read through the example directories and the codebase, or if you are REALLY REALLY REALLY desperate, I am happy to answer your questions via the issue tracker in this repository.

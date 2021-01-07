@@ -382,14 +382,14 @@ class Synaps {
     }
   }
 
-  /// Calls the given function `monitor`, but and records any variable reads
+  /// Calls the given function `capture`, and records any variable reads
   /// while that function executes.
   /// 
   /// ***You should call [SynapsMonitorState.dispose] once finished with monitoring***
   /// 
   /// Will call `onUpdate` for every subsequent single variable that is updated.
   /// 
-  /// i.e. if three variables are updated in a single playback, then `onUpdate` will
+  /// i.e. if three variables are updated in a single transaction, then `onUpdate` will
   /// be called three times, once for each variable
   /// 
   static SynapsMonitorState monitorGranular({@required SynapsMonitorFunction capture,@required SynapsMonitorGranularCallbackFunction onUpdate}) {
@@ -418,14 +418,14 @@ class Synaps {
   }
 
 
-  /// Calls the given function `monitor`, but and records any variable reads
+  /// Calls the given function `capture`, and records any variable reads
   /// while that function executes.
   /// 
   /// ***You should call [SynapsMonitorState.dispose] once finished with monitoring***
   /// 
-  /// Will call `onUpdate` when at most once per update
+  /// Will call `onUpdate` at most once per update/transaction
   /// 
-  /// i.e. if three variables are updated in a single playback, then `onUpdate` will
+  /// i.e. if three variables are updated in a single transaction, then `onUpdate` will
   /// be called once
   /// 
   static SynapsMonitorState monitor({@required SynapsMonitorFunction capture,@required SynapsMonitorCallbackFunction onUpdate}) {
