@@ -155,6 +155,15 @@ class _RxRenderCustomPaint extends RenderCustomPaint {
   );
 
   @override
+  void detach() {
+    super.detach();
+    if(_monitorState != null) {
+      _monitorState.dispose();
+      _monitorState = null;
+    }
+  }
+
+  @override
   void paint(PaintingContext context, Offset offset) {
     if(_monitorState != null) {
       _monitorState.dispose();
@@ -164,12 +173,10 @@ class _RxRenderCustomPaint extends RenderCustomPaint {
     _monitorState = Synaps.monitor(
       capture: () {
         // Capture any observables inside the original paint method
-        print("Paint");
         super.paint(context,offset);
       },
       onUpdate: () {
         // Mark this RenderObject for a re-paint if any observables change
-        print("Repaint");
         this.markNeedsPaint();
       }
     );
