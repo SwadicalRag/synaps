@@ -76,7 +76,9 @@ class RxState extends State<Rx> {
       1. Not using .ctx()/.toController() on @Controller() classes
       2. Not using any @Controller() classes inside this Rx() widget
       3. The field being accessed was not marked with @Observable()
-      4. The field is being accessed *asynchronously* and/or *after* the build function has
+      4. The generated dart file is outdated after new changes to the controller class (like adding
+          a new @Observable() declaration)
+      5. The field is being accessed *asynchronously* and/or *after* the build function has
           returned a value. It does not make sense to update a widget because of a field that
           does not participate in the making of the return value of this build method
       """;
@@ -188,10 +190,12 @@ class _RxRenderCustomPaint extends RenderCustomPaint {
       1. Not using .ctx()/.toController() on @Controller() classes
       2. Not using any @Controller() classes inside the paint() method of this CustomPainter
       3. The field being accessed was not marked with @Observable()
-      4. The field is being accessed *asynchronously* and/or *after* the paint() function has
+      4. The generated dart file is outdated after new changes to the controller class (like adding
+          a new @Observable() declaration)
+      5. The field is being accessed *asynchronously* and/or *after* the paint() function has
           returned. It does not make sense to update a CustomPainter because of a field that
           does not directly participate in the render of this canvas
-      5. There is a region of code that accesses an @Observable() field, but it was not evaluated
+      6. There is a region of code that accesses an @Observable() field, but it was not evaluated
           (maybe because it is inside a conditional block that was not evaluated). Synaps cannot
           detect @Observables() from regions of code that were not executed. Therefore, it may not
           know when to re-paint this custom widget. If this is intentional, this error can be 
