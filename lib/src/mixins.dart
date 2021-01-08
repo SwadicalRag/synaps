@@ -1,4 +1,5 @@
 import "package:meta/meta.dart";
+import 'package:synaps/src/controller.dart';
 
 /// Applying this mixin to your controller class will make the following work:
 /// 
@@ -15,17 +16,14 @@ import "package:meta/meta.dart";
 /// ctx1 == imposter; // false
 /// ```
 class WeakEqualityController {
-  @protected
-  dynamic internalObjectValue;
-
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) {
       return true;
     }
 
-    if (other is WeakEqualityController) {
-      if(identical(other.internalObjectValue, this)) {
+    if (other is SynapsControllerInterface) {
+      if(identical(other.boxedValue, this)) {
         return true;
       }
     }

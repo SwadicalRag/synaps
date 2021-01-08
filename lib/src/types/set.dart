@@ -6,18 +6,18 @@ class SynapsSetIterator<T> extends Iterator<T> {
   final SynapsSet<T> _synapsSet;
   final Set<T> _internalSet;
   
-  Iterator<T> _internal;
+  Iterator<T> boxedValue;
 
   SynapsSetIterator(this._synapsSet,this._internalSet) {
-    _internal = _internalSet.iterator;
+    boxedValue = _internalSet.iterator;
   }
   
   @override
   bool moveNext() {
-    final moved = _internal.moveNext();
+    final moved = boxedValue.moveNext();
 
     if(moved) {
-      _synapsSet.synapsMarkVariableRead(_internal.current);
+      _synapsSet.synapsMarkVariableRead(boxedValue.current);
     }
 
     return moved;
@@ -25,28 +25,29 @@ class SynapsSetIterator<T> extends Iterator<T> {
 
   @override
   T get current {
-    _synapsSet.synapsMarkVariableRead(_internal.current);
-    return _internal.current;
+    _synapsSet.synapsMarkVariableRead(boxedValue.current);
+    return boxedValue.current;
   }
 }
 
-class SynapsSet<T> extends SetMixin<T> with SynapsControllerInterface {
-  final Set<T> _internal;
+class SynapsSet<T> extends SetMixin<T> with SynapsControllerInterface<Set<T>> {
+  @override
+  final Set<T> boxedValue;
 
-  SynapsSet([this._internal = const {}]);
+  SynapsSet([this.boxedValue = const {}]);
 
   @override
   bool contains(Object value) {
     synapsMarkVariableRead(value);
-    return _internal.contains(value);
+    return boxedValue.contains(value);
   }
 
   @override
   bool add(T value) {
-    final changed = _internal.add(value);
+    final changed = boxedValue.add(value);
     if(changed) {
       synapsMarkVariableDirty(value,value,true);
-      synapsMarkVariableDirty(SynapsControllerInterface.LENGTH_ORACLE,_internal.length);
+      synapsMarkVariableDirty(SynapsControllerInterface.LENGTH_ORACLE,boxedValue.length);
     }
     return changed;
   }
@@ -54,32 +55,32 @@ class SynapsSet<T> extends SetMixin<T> with SynapsControllerInterface {
   @override
   T lookup(Object value) {
     synapsMarkVariableRead(value);
-    return _internal.lookup(value);
+    return boxedValue.lookup(value);
   }
 
   @override
   bool remove(Object value) {
-    final changed = _internal.remove(value);
+    final changed = boxedValue.remove(value);
     if(changed) {
       synapsMarkVariableDirty(value,SynapsControllerInterface.NULL_ORACLE,true);
-      synapsMarkVariableDirty(SynapsControllerInterface.LENGTH_ORACLE,_internal.length);
+      synapsMarkVariableDirty(SynapsControllerInterface.LENGTH_ORACLE,boxedValue.length);
     }
     return changed;
   }
 
   @override
   SynapsSet<T> toSet() {
-    final dartSet = _internal.toSet();
+    final dartSet = boxedValue.toSet();
     final proxySet = SynapsSet<T>(dartSet);
     return proxySet;
   }
 
   @override
-  Iterator<T> get iterator => SynapsSetIterator<T>(this,_internal);
+  Iterator<T> get iterator => SynapsSetIterator<T>(this,boxedValue);
 
   @override
   int get length {
     synapsMarkVariableRead(SynapsControllerInterface.LENGTH_ORACLE);
-    return _internal.length;
+    return boxedValue.length;
   }
 }

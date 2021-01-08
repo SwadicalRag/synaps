@@ -26,6 +26,36 @@ void main() {
       expect(hello2 == helloCtx2,equals(false));
     });
 
+    test(".boxedValue is identical to its originalClass", () {
+      final hello = Hello();
+      final helloCtx1 = hello.ctx();
+
+      expect(identical(hello,helloCtx1.boxedValue),equals(true));
+    });
+
+    test("'s originalClass.boxedValue is identical to originalClass", () {
+      final hello = Hello();
+      final helloCtx1 = hello.ctx();
+
+      expect(identical(hello,hello.boxedValue),equals(true));
+    });
+
+    test(".ctx() is identical to itself", () {
+      final hello = Hello();
+      final helloCtx1 = hello.ctx();
+      final helloCtxChained = helloCtx1.ctx();
+
+      expect(identical(helloCtx1,helloCtxChained),equals(true));
+    });
+
+    test(".ctx() is not identical to a different Hello.ctx()", () {
+      final hello = Hello();
+      final helloCtx1 = hello.ctx();
+      final helloCtx2 = hello.ctx();
+
+      expect(identical(helloCtx1,helloCtx2),equals(false));
+    });
+
     test(".monitor() does not trigger onUpdate() for non observable fields", () {
       final hello = Hello().ctx();
 

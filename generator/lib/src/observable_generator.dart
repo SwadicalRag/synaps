@@ -67,13 +67,14 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
       if(filteredMixins.isNotEmpty) {
         final mixinList = filteredMixins.map((mxn) => mxn.getDisplayString(withNullability: false)).join(",");
 
-        buffer.write("with SynapsControllerInterface,${mixinList} ");
+        buffer.write("with SynapsControllerInterface<${parentClassName}${templates}>,${mixinList} ");
       }
       else {
-        buffer.write("with SynapsControllerInterface ");
+        buffer.write("with SynapsControllerInterface<${parentClassName}${templates}> ");
       }
       buffer.writeln("{");
-      buffer.writeln("final ${parentClassName}${templates} _internal;");
+      buffer.writeln("@override");
+      buffer.writeln("final ${parentClassName}${templates} boxedValue;");
 
       final copyOnInitialise = <String,String>{};
       final copyOnInitialiseType = <String,String>{};
@@ -114,7 +115,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
               buffer.writeln("@override");
               buffer.writeln("set ${field.name}(${typeString} value) {");
               buffer.writeln("${proxyName} = ${proxyTypeString}(value);");
-              buffer.writeln("_internal.${field.name} = value;");
+              buffer.writeln("boxedValue.${field.name} = value;");
               buffer.writeln("synapsMarkVariableDirty(#${field.name},value);");
               buffer.writeln("}");
             }
@@ -138,7 +139,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
               buffer.writeln("@override");
               buffer.writeln("set ${field.name}(${typeString} value) {");
               buffer.writeln("${proxyName} = value.ctx();");
-              buffer.writeln("_internal.${field.name} = value;");
+              buffer.writeln("boxedValue.${field.name} = value;");
               buffer.writeln("synapsMarkVariableDirty(#${field.name},value);");
               buffer.writeln("}");
             }
@@ -150,14 +151,14 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
               buffer.writeln("@override");
               buffer.writeln("${typeString} get ${field.name} {");
               buffer.writeln("synapsMarkVariableRead(#${field.name});");
-              buffer.writeln("return _internal.${field.name};");
+              buffer.writeln("return boxedValue.${field.name};");
               buffer.writeln("}");
             }
 
             if(!field.isFinal) {
               buffer.writeln("@override");
               buffer.writeln("set ${field.name}(${typeString} value) {");
-              buffer.writeln("_internal.${field.name} = value;");
+              buffer.writeln("boxedValue.${field.name} = value;");
               buffer.writeln("synapsMarkVariableDirty(#${field.name},value);");
               buffer.writeln("}");
             }
@@ -169,14 +170,14 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
           if(field.getter != null) {
             buffer.writeln("@override");
             buffer.writeln("${typeString} get ${field.name} {");
-            buffer.writeln("return _internal.${field.name};");
+            buffer.writeln("return boxedValue.${field.name};");
             buffer.writeln("}");
           }
 
           if(!field.isFinal) {
             buffer.writeln("@override");
             buffer.writeln("set ${field.name}(${typeString} value) {");
-            buffer.writeln("_internal.${field.name} = value;");
+            buffer.writeln("boxedValue.${field.name} = value;");
             buffer.writeln("}");
           }
         }
@@ -281,22 +282,19 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
         forwardMethod(method);
       }
 
-      buffer.write("${className}(this._internal)");
+      buffer.write("${className}(this.boxedValue)");
       if(copyOnInitialise.isNotEmpty || activateCtxOnInitialise.isNotEmpty || hasWEC) {
         buffer.writeln(" {");
-        if(hasWEC) {
-          buffer.writeln("internalObjectValue = _internal;");
-        }
         for(final fromVarName in copyOnInitialise.keys) {
           final toVarName = copyOnInitialise[fromVarName];
           final toVarType = copyOnInitialiseType[fromVarName];
 
-          buffer.writeln("${toVarName} = _internal.${fromVarName} != null ? ${toVarType}(_internal.${fromVarName}) : null;");
+          buffer.writeln("${toVarName} = boxedValue.${fromVarName} != null ? ${toVarType}(boxedValue.${fromVarName}) : null;");
         }
         for(final fromVarName in activateCtxOnInitialise.keys) {
           final toVarName = activateCtxOnInitialise[fromVarName];
 
-          buffer.writeln("${toVarName} = _internal.${fromVarName} != null ? _internal.${fromVarName}.ctx() : null;");
+          buffer.writeln("${toVarName} = boxedValue.${fromVarName} != null ? boxedValue.${fromVarName}.ctx() : null;");
         }
         buffer.writeln("}");
       }
@@ -311,11 +309,11 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
         buffer.writeln("return true;");
         buffer.writeln("}");
         
-        buffer.writeln("if (identical(other, _internal)) {");
+        buffer.writeln("if (identical(other, boxedValue)) {");
         buffer.writeln("return true;");
         buffer.writeln("}");
         
-        buffer.writeln("if ((other is WeakEqualityController) && identical(other.internalObjectValue, internalObjectValue)) {");
+        buffer.writeln("if ((other is SynapsControllerInterface) && identical(other.boxedValue, boxedValue)) {");
         buffer.writeln("return true;");
         buffer.writeln("}");
 
@@ -323,7 +321,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
         buffer.writeln("}");
 
         buffer.writeln("@override");
-        buffer.writeln("int get hashCode => internalObjectValue.hashCode;");
+        buffer.writeln("int get hashCode => boxedValue.hashCode;");
       }
 
       buffer.writeln("}");
@@ -334,6 +332,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
       buffer.writeln("return ${className}${templates}(this);");
       buffer.writeln("}");
       buffer.writeln("${className}${templates} ctx() => asController();");
+      buffer.writeln("${parentClassName}${templates} get boxedValue => this;");
       buffer.writeln("}");
 
       return buffer.toString();

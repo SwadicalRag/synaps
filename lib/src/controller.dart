@@ -1,3 +1,4 @@
+import "package:meta/meta.dart";
 import "package:synaps/synaps.dart";
 
 typedef void SynapsListenerFunction<T>(T newValue);
@@ -46,7 +47,10 @@ class _NULL_ORACLE extends SynapsOracle {}
 class _LENGTH_ORACLE extends SynapsOracle {}
 class _KEYS_ORACLE extends SynapsOracle {}
 
-class SynapsControllerInterface {
+abstract class SynapsControllerInterface<T> {
+  /// The value contained inside this interface.
+  T get boxedValue;
+
   static final NULL_ORACLE = _NULL_ORACLE();
   static final LENGTH_ORACLE = _LENGTH_ORACLE();
   static final KEYS_ORACLE = _KEYS_ORACLE();

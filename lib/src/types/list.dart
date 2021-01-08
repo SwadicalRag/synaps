@@ -3,32 +3,33 @@ import "dart:collection";
 import "package:synaps/synaps.dart";
 
 class SynapsList<T> extends ListMixin<T> with SynapsControllerInterface {
-  final List<T> _internal;
+  @override
+  final List<T> boxedValue;
 
-  SynapsList([this._internal = const []]);
+  SynapsList([this.boxedValue = const []]);
 
   @override
   T operator [](int index) {
     synapsMarkVariableRead(index);
-    return _internal[index];
+    return boxedValue[index];
   }
 
   @override
   void operator []=(int index,T value) {
-    _internal[index] = value;
+    boxedValue[index] = value;
     synapsMarkVariableDirty(index,value);
   }
 
   @override
   int get length {
     synapsMarkVariableRead(SynapsControllerInterface.LENGTH_ORACLE);
-    return _internal.length;
+    return boxedValue.length;
   }
 
   @override
   set length(int value) {
-    if(value != _internal.length) {
-      _internal.length = value;
+    if(value != boxedValue.length) {
+      boxedValue.length = value;
       synapsMarkVariableDirty(SynapsControllerInterface.LENGTH_ORACLE,value);
     }
   }
