@@ -2,6 +2,7 @@ library synaps;
 
 export 'package:synaps/synaps.dart';
 
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:synaps/synaps.dart';
 
@@ -82,5 +83,113 @@ class RxState extends State<Rx> {
     }
 
     return out;
+  }
+}
+
+
+/// A CustomPaint widget that wraps Synaps
+/// It is a "drop in" replacement for CustomPaint
+/// 
+/// It will intelligently capture any @Observables used inside the
+/// paint methods of any CustomPainters that this widget accepts, and
+/// will intelligently mark this widget for a re-paint if any @Observables
+/// are updated.
+/// 
+/// With `allowEmptyCaptures` is set to false, this widget will throw errors
+/// if @Observables() were unable to be captured inside the paint method.
+/// 
+class RxCustomPaint extends CustomPaint {
+  final bool allowEmptyCaptures;
+
+  RxCustomPaint({
+    this.allowEmptyCaptures = false,
+    Key key,
+    CustomPainter painter,
+    CustomPainter foregroundPainter,
+    size = Size.zero,
+    isComplex = false,
+    willChange = false,
+    Widget child,
+  }) : super(
+    key: key,
+    painter: painter,
+    foregroundPainter: foregroundPainter,
+    size: size,
+    isComplex: isComplex,
+    willChange: willChange,
+    child: child,
+  );
+
+  @override
+  RenderCustomPaint createRenderObject(BuildContext context) {
+    return _RxRenderCustomPaint(
+      allowEmptyCaptures: allowEmptyCaptures,
+      painter: painter,
+      foregroundPainter: foregroundPainter,
+      preferredSize: size,
+      isComplex: isComplex,
+      willChange: willChange,
+    );
+  }
+}
+
+class _RxRenderCustomPaint extends RenderCustomPaint {
+  SynapsMonitorState _monitorState;
+  final bool allowEmptyCaptures;
+
+  _RxRenderCustomPaint({
+    this.allowEmptyCaptures,
+    CustomPainter painter,
+    CustomPainter foregroundPainter,
+    preferredSize = Size.zero,
+    isComplex = false,
+    willChange = false,
+    RenderBox child,
+  }) : super(
+    painter: painter,
+    foregroundPainter: foregroundPainter,
+    preferredSize: preferredSize,
+    isComplex: isComplex,
+    willChange: willChange,
+    child: child,
+  );
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    if(_monitorState != null) {
+      _monitorState.dispose();
+      _monitorState = null;
+    }
+
+    _monitorState = Synaps.monitor(
+      capture: () {
+        // Capture any observables inside the original paint method
+        print("Paint");
+        super.paint(context,offset);
+      },
+      onUpdate: () {
+        // Mark this RenderObject for a re-paint if any observables change
+        print("Repaint");
+        this.markNeedsPaint();
+      }
+    );
+
+    if(!_monitorState.hasCapturedSymbols && (allowEmptyCaptures != true)) {
+      throw """
+      [synaps_flutter] No observable variables were detected directly inside this CustomPainter.
+      Several common issues that lead to this error include:
+      1. Not using .ctx()/.toController() on @Controller() classes
+      2. Not using any @Controller() classes inside the paint() method of this CustomPainter
+      3. The field being accessed was not marked with @Observable()
+      4. The field is being accessed *asynchronously* and/or *after* the paint() function has
+          returned. It does not make sense to update a CustomPainter because of a field that
+          does not directly participate in the render of this canvas
+      5. There is a region of code that accesses an @Observable() field, but it was not evaluated
+          (maybe because it is inside a conditional block that was not evaluated). Synaps cannot
+          detect @Observables() from regions of code that were not executed. Therefore, it may not
+          know when to re-paint this custom widget. If this is intentional, this error can be 
+          bypassed by setting `allowEmptyCaptures` to `true` in the CustomPaint constructor.
+      """;
+    }
   }
 }
