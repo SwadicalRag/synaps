@@ -6,28 +6,31 @@ part of 'example_controller.dart';
 // ObservableGenerator
 // **************************************************************************
 
-class _CounterController extends Counter with SynapsControllerInterface {
-  final Counter _internal;
+class $CounterController extends Counter
+    with SynapsControllerInterface<Counter> {
+  @override
+  final Counter boxedValue;
   @override
   int get clk {
     synapsMarkVariableRead(#clk);
-    return _internal.clk;
+    return boxedValue.clk;
   }
 
   @override
   set clk(int value) {
-    _internal.clk = value;
+    boxedValue.clk = value;
     synapsMarkVariableDirty(#clk, value);
   }
 
-  _CounterController(this._internal);
+  $CounterController(this.boxedValue);
 }
 
 extension CounterControllerExtension on Counter {
-  _CounterController asController() {
-    if (this is _CounterController) return this;
-    return _CounterController(this);
+  $CounterController asController() {
+    if (this is $CounterController) return this;
+    return $CounterController(this);
   }
 
-  _CounterController ctx() => asController();
+  $CounterController ctx() => asController();
+  Counter get boxedValue => this;
 }
