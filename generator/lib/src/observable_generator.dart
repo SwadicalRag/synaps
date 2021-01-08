@@ -41,6 +41,32 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
     return annotations.isNotEmpty;
   }
 
+  String _getControllerClassTypeString(InterfaceType interfaceType,[bool deep = false]) {
+    final element = interfaceType.element;
+    final parentClassName = element.displayName;
+    final classNameClean = parentClassName + "Controller";
+    final classNameIdentifier = r"$" + classNameClean;
+
+    var typeString = classNameIdentifier;
+    
+    if(interfaceType.typeArguments.isNotEmpty) {
+      final templateList = <String>[];
+      for(final fieldTypeArgument in interfaceType.typeArguments) {
+        if(deep && _isControllerClass(fieldTypeArgument)) {
+          templateList.add(_getControllerClassTypeString(fieldTypeArgument));
+        }
+        else {
+          templateList.add(fieldTypeArgument.getDisplayString(withNullability: false));
+        }
+      }
+      typeString += "<";
+      typeString += templateList.join(",");
+      typeString += ">";
+    }
+
+    return typeString;
+  }
+
   @override
   String generateForAnnotatedElement(Element element, 
       ConstantReader classAnnotation, BuildStep buildStep) {
@@ -49,8 +75,8 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
       final buffer = StringBuffer();
 
       final parentClassName = element.displayName;
-      final classNamePublic = parentClassName + "Controller";
-      final className = "_" + classNamePublic;
+      final classNameClean = parentClassName + "Controller";
+      final classNameIdentifier = r"$" + classNameClean;
       final templateDeclarations = element.typeParameters.isNotEmpty ?
         "<" + element.typeParameters.map((t) => t.getDisplayString(withNullability: false)).join(",") + ">"
           : "";
@@ -58,7 +84,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
         "<" + element.typeParameters.map((t) => t.name).join(",") + ">"
           : "";
 
-      buffer.write("class ${className}${templateDeclarations} ");
+      buffer.write("class ${classNameIdentifier}${templateDeclarations} ");
       buffer.write("extends ${parentClassName}${templates} ");
       final hasWEC = element.mixins
           .any((mxn) => mxn.element.name == "WeakEqualityController");
@@ -76,8 +102,6 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
       buffer.writeln("@override");
       buffer.writeln("final ${parentClassName}${templates} boxedValue;");
 
-      final copyOnInitialise = <String,String>{};
-      final copyOnInitialiseType = <String,String>{};
       final activateCtxOnInitialise = <String,String>{};
 
       void forwardField(FieldElement field) {
@@ -97,10 +121,39 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
           if(field.type.isDartCoreList || field.type.isDartCoreSet || field.type.isDartCoreMap) {
             final proxyName = "_proxy_${field.name}";
             final typeString = field.type.getDisplayString(withNullability: false);
-            final proxyTypeString = "Synaps" + typeString;
+            var boxedTypeString = typeString;
+            if(field.type.isDartCoreList) {
+              boxedTypeString = "List";
+            }
+            else if(field.type.isDartCoreSet) {
+              boxedTypeString = "Set";
+            }
+            else if(field.type.isDartCoreMap) {
+              boxedTypeString = "Map";
+            }
+            if(field.type is InterfaceType) {
+              final fieldTypeArguments = (field.type as InterfaceType).typeArguments;
 
-            copyOnInitialise[field.name] = proxyName;
-            copyOnInitialiseType[field.name] = proxyTypeString;
+              if(fieldTypeArguments.isNotEmpty) {
+                final templateList = <String>[];
+                for(final fieldTypeArgument in fieldTypeArguments) {
+                  if(_isControllerClass(fieldTypeArgument)) {
+                    templateList.add(_getControllerClassTypeString(fieldTypeArgument));
+                  }
+                  else {
+                    templateList.add(fieldTypeArgument.getDisplayString(withNullability: false));
+                  }
+                }
+                boxedTypeString += "<";
+                boxedTypeString += templateList.join(",");
+                boxedTypeString += ">";
+              }
+            }
+
+            final proxyTypeString = "Synaps" + typeString;
+            final boxedProxyTypeString = "Synaps" + boxedTypeString;
+
+            activateCtxOnInitialise[field.name] = proxyName;
 
             if(field.getter != null) {
               buffer.writeln("${proxyTypeString} ${proxyName};");
@@ -114,8 +167,8 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
             if(!field.isFinal) {
               buffer.writeln("@override");
               buffer.writeln("set ${field.name}(${typeString} value) {");
-              buffer.writeln("${proxyName} = ${proxyTypeString}(value);");
-              buffer.writeln("boxedValue.${field.name} = value;");
+              buffer.writeln("${proxyName} = value.ctx();");
+              buffer.writeln("boxedValue.${field.name} = ${proxyName};");
               buffer.writeln("synapsMarkVariableDirty(#${field.name},value);");
               buffer.writeln("}");
             }
@@ -123,13 +176,14 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
           else if(_isControllerClass(field.type)) {
             final proxyName = "_proxy_${field.name}";
             final typeString = field.type.getDisplayString(withNullability: false);
+            final boxedTypeString = _getControllerClassTypeString(field.type);
 
             activateCtxOnInitialise[field.name] = proxyName;
 
             if(field.getter != null) {
-              buffer.writeln("${typeString} ${proxyName};");
+              buffer.writeln("${boxedTypeString} ${proxyName};");
               buffer.writeln("@override");
-              buffer.writeln("${typeString} get ${field.name} {");
+              buffer.writeln("${boxedTypeString} get ${field.name} {");
               buffer.writeln("synapsMarkVariableRead(#${field.name});");
               buffer.writeln("return ${proxyName};");
               buffer.writeln("}");
@@ -139,7 +193,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
               buffer.writeln("@override");
               buffer.writeln("set ${field.name}(${typeString} value) {");
               buffer.writeln("${proxyName} = value.ctx();");
-              buffer.writeln("boxedValue.${field.name} = value;");
+              buffer.writeln("boxedValue.${field.name} = ${proxyName}.boxedValue;");
               buffer.writeln("synapsMarkVariableDirty(#${field.name},value);");
               buffer.writeln("}");
             }
@@ -282,15 +336,9 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
         forwardMethod(method);
       }
 
-      buffer.write("${className}(this.boxedValue)");
-      if(copyOnInitialise.isNotEmpty || activateCtxOnInitialise.isNotEmpty || hasWEC) {
+      buffer.write("${classNameIdentifier}(this.boxedValue)");
+      if(activateCtxOnInitialise.isNotEmpty || hasWEC) {
         buffer.writeln(" {");
-        for(final fromVarName in copyOnInitialise.keys) {
-          final toVarName = copyOnInitialise[fromVarName];
-          final toVarType = copyOnInitialiseType[fromVarName];
-
-          buffer.writeln("${toVarName} = boxedValue.${fromVarName} != null ? ${toVarType}(boxedValue.${fromVarName}) : null;");
-        }
         for(final fromVarName in activateCtxOnInitialise.keys) {
           final toVarName = activateCtxOnInitialise[fromVarName];
 
@@ -326,12 +374,12 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
 
       buffer.writeln("}");
 
-      buffer.writeln("extension ${classNamePublic}Extension${templateDeclarations} on ${parentClassName}${templates} {");
-      buffer.writeln("${className}${templates} asController() {");
-      buffer.writeln("if(this is ${className}) return this;");
-      buffer.writeln("return ${className}${templates}(this);");
+      buffer.writeln("extension ${classNameClean}Extension${templateDeclarations} on ${parentClassName}${templates} {");
+      buffer.writeln("${classNameIdentifier}${templates} asController() {");
+      buffer.writeln("if(this is ${classNameIdentifier}) return this;");
+      buffer.writeln("return ${classNameIdentifier}${templates}(this);");
       buffer.writeln("}");
-      buffer.writeln("${className}${templates} ctx() => asController();");
+      buffer.writeln("${classNameIdentifier}${templates} ctx() => asController();");
       buffer.writeln("${parentClassName}${templates} get boxedValue => this;");
       buffer.writeln("}");
 

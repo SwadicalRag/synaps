@@ -84,3 +84,13 @@ class SynapsSet<T> extends SetMixin<T> with SynapsControllerInterface<Set<T>> {
     return boxedValue.length;
   }
 }
+
+extension SynapsSetExtension<T> on Set<T> {
+  SynapsSet<T> asController() {
+    if (this is SynapsSet<T>) return this;
+    return SynapsSet<T>(this);
+  }
+
+  SynapsSet<T> ctx() => asController();
+  Set<T> get boxedValue => this;
+}

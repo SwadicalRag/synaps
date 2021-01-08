@@ -34,3 +34,13 @@ class SynapsList<T> extends ListMixin<T> with SynapsControllerInterface {
     }
   }
 }
+
+extension SynapsListExtension<T> on List<T> {
+  SynapsList<T> asController() {
+    if (this is SynapsList<T>) return this;
+    return SynapsList<T>(this);
+  }
+
+  SynapsList<T> ctx() => asController();
+  List<T> get boxedValue => this;
+}

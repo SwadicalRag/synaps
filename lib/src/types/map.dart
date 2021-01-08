@@ -97,3 +97,13 @@ class SynapsMap<K,V> extends MapMixin<K,V> with SynapsControllerInterface<Map<K,
     return _keysInternal;
   }
 }
+
+extension SynapsMapExtension<K,V> on Map<K,V> {
+  SynapsMap<K,V> asController() {
+    if (this is SynapsMap<K,V>) return this;
+    return SynapsMap<K,V>(this);
+  }
+
+  SynapsMap<K,V> ctx() => asController();
+  Map<K,V> get boxedValue => this;
+}

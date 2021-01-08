@@ -10,4 +10,7 @@ class ReferenceTest {
   
   @Observable()
   String somethingElse;
+
+  @Observable()
+  Set<Hello> greetingz;
 }
