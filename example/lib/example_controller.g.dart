@@ -6,8 +6,9 @@ part of 'example_controller.dart';
 // ObservableGenerator
 // **************************************************************************
 
-class $CounterController extends Counter
-    with SynapsControllerInterface<Counter> {
+class $CounterController
+    with SynapsControllerInterface<Counter>
+    implements Counter {
   @override
   final Counter boxedValue;
   @override

@@ -85,19 +85,10 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
           : "";
 
       buffer.write("class ${classNameIdentifier}${templateDeclarations} ");
-      buffer.write("extends ${parentClassName}${templates} ");
+      buffer.write("with SynapsControllerInterface<${parentClassName}${templates}> ");
+      buffer.write("implements ${parentClassName}${templates} ");
       final hasWEC = element.mixins
           .any((mxn) => mxn.element.name == "WeakEqualityController");
-      final filteredMixins = element.mixins
-          .where((mxn) => mxn.element.name != "WeakEqualityController");
-      if(filteredMixins.isNotEmpty) {
-        final mixinList = filteredMixins.map((mxn) => mxn.getDisplayString(withNullability: false)).join(",");
-
-        buffer.write("with SynapsControllerInterface<${parentClassName}${templates}>,${mixinList} ");
-      }
-      else {
-        buffer.write("with SynapsControllerInterface<${parentClassName}${templates}> ");
-      }
       buffer.writeln("{");
       buffer.writeln("@override");
       buffer.writeln("final ${parentClassName}${templates} boxedValue;");
@@ -238,103 +229,56 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
       }
 
       void forwardMethod(MethodElement method) {
-        final returnTypeString = method.returnType.getDisplayString(withNullability: false);
-        final functionTemplates = method.typeParameters.isNotEmpty ?
-          "<" + method.typeParameters.map((t) => t.name).join(",") + ">"
-            : "";
-
-        var argListDeclarations = "";
-        var argList = "";
-        
-        final numPositionalArgs = method.parameters
-          .fold(0,(val,param) => val + (param.isRequiredPositional ? 1 : 0));
-        final hasOptionalPositional = method.parameters
-          .fold(false,(val,param) => val || param.isOptionalPositional);
-        final hasNamed = method.parameters
-          .fold(false,(val,param) => val || param.isNamed);
-        
-        // Generate all argument declarations
-        argListDeclarations += method.parameters.where((param) => param.isRequiredPositional).map((param) {
-          return param.type.getDisplayString(withNullability: false)
-            + " " + param.name;
-        }).join(",");
-
-        if(hasOptionalPositional) {
-          if(numPositionalArgs > 0) {
-            argListDeclarations += ",";
-          }
-
-          argListDeclarations += "[";
-          
-          argListDeclarations += method.parameters.where((param) => param.isOptionalPositional).map((param) {
-            return param.type.getDisplayString(withNullability: false)
-              + " " + param.name;
-          }).join(",");
-
-          argListDeclarations += "]";
-        }
-        else if(hasNamed) {
-          if(numPositionalArgs > 0) {
-            argListDeclarations += ",";
-          }
-
-          argListDeclarations += "{";
-          
-          argListDeclarations += method.parameters.where((param) => param.isNamed).map((param) {
-            var cParam = param.type.getDisplayString(withNullability: false)
-              + " " + param.name;
-
-            if(param.hasRequired) {
-              cParam = "@required " + cParam;
-            }
-
-            return cParam;
-          }).join(",");
-
-          argListDeclarations += "}";
-        }
-        
-        // Generate all argument expressions
-        argList += method.parameters.where((param) => param.isRequiredPositional).map((param) {
-          return param.name;
-        }).join(",");
-
-        if(hasOptionalPositional) {
-          if(numPositionalArgs > 0) {
-            argList += ",";
-          }
-
-          argList += method.parameters.where((param) => param.isOptionalPositional).map((param) {
-            return param.name;
-          }).join(",");
-        }
-        else if(hasNamed) {
-          if(numPositionalArgs > 0) {
-            argList += ",";
-          }
-
-          argList += method.parameters.where((param) => param.isNamed).map((param) {
-            return param.name + ": " + param.name;
-          }).join(",");
-        }
+        final library = method.session.getParsedLibraryByElement(method.library);
+        final astNode = library.getElementDeclaration(method);
 
         buffer.writeln("@override");
-        buffer.writeln("${returnTypeString} ${method.name}${functionTemplates}(${argListDeclarations}) {");
-        buffer.writeln("return super.${method.name}${functionTemplates}(${argList});");
-        buffer.writeln("}");
+        buffer.writeln(astNode.node.toSource());
       }
 
-      for (final field in element.fields) {
-        if (field.name.startsWith("_")) {continue;}
-        if (field.isStatic) {continue;}
 
-        forwardField(field);
+      void recurseSubclass(ClassElement recElement,[Set<Element> seen]) {
+        if(recElement.isDartCoreObject) {return;}
+
+        seen ??= {};
+
+        if(seen.contains(recElement)) return;
+        seen.add(recElement);
+        
+        for (final field in recElement.fields) {
+          // if (field.name.startsWith("_")) {continue;}
+          if (field.isStatic) {continue;}
+
+          forwardField(field);
+        }
+
+        for (final method in recElement.methods) {
+          // if (method.name.startsWith("_")) {continue;}
+          if (method.isStatic) {continue;}
+          if(hasWEC && method.isOperator && method.name == "==") {continue;}
+          forwardMethod(method);
+        }
+
+        if(recElement.supertype != null) {
+          if(recElement.supertype.element is ClassElement) {
+            recurseSubclass(recElement.supertype.element,seen);
+          }
+        }
+
+        for(final mxn in recElement.mixins) {
+          if(mxn.element is ClassElement) {
+            recurseSubclass(mxn.element,seen);
+          }
+        }
+
+        for(final interface in recElement.interfaces) {
+          if(interface.element is ClassElement) {
+            recurseSubclass(interface.element,seen);
+          }
+        }
       }
 
-      for (final method in element.methods) {
-        if (method.isStatic) {continue;}
-        forwardMethod(method);
-      }
+      recurseSubclass(element);
 
       buffer.write("${classNameIdentifier}(this.boxedValue)");
       if(activateCtxOnInitialise.isNotEmpty || hasWEC) {
