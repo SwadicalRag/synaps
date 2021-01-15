@@ -228,30 +228,24 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
         }
       }
 
-      void forwardMethod(MethodElement method) {
-        // final library = method.session.getParsedLibraryByElement(method.library);
-        // final astNode = library.getElementDeclaration(method);
-
-        // buffer.writeln("@override");
-        // buffer.writeln(astNode.node.toSource());
-        
-        final returnTypeString = method.returnType.getDisplayString(withNullability: false);
-        final functionTemplates = method.typeParameters.isNotEmpty ?
-          "<" + method.typeParameters.map((t) => t.name).join(",") + ">"
+      String getTemplatesString(List<TypeParameterElement> typeParameters) {
+        return typeParameters.isNotEmpty ?
+          "<" + typeParameters.map((t) => t.name).join(",") + ">"
             : "";
+      }
 
+      String getArgListDeclarations(List<ParameterElement> parameters) {
         var argListDeclarations = "";
-        var argList = "";
         
-        final numPositionalArgs = method.parameters
+        final numPositionalArgs = parameters
           .fold(0,(val,param) => val + (param.isRequiredPositional ? 1 : 0));
-        final hasOptionalPositional = method.parameters
-          .fold(false,(val,param) => val || param.isOptionalPositional);
-        final hasNamed = method.parameters
-          .fold(false,(val,param) => val || param.isNamed);
+        final hasOptionalPositional = parameters
+          .any((param) => param.isOptionalPositional);
+        final hasNamed = parameters
+          .any((param) => param.isNamed);
         
         // Generate all argument declarations
-        argListDeclarations += method.parameters.where((param) => param.isRequiredPositional).map((param) {
+        argListDeclarations += parameters.where((param) => param.isRequiredPositional).map((param) {
           return param.type.getDisplayString(withNullability: false)
             + " " + param.name;
         }).join(",");
@@ -263,7 +257,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
 
           argListDeclarations += "[";
           
-          argListDeclarations += method.parameters.where((param) => param.isOptionalPositional).map((param) {
+          argListDeclarations += parameters.where((param) => param.isOptionalPositional).map((param) {
             return param.type.getDisplayString(withNullability: false)
               + " " + param.name;
           }).join(",");
@@ -277,7 +271,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
 
           argListDeclarations += "{";
           
-          argListDeclarations += method.parameters.where((param) => param.isNamed).map((param) {
+          argListDeclarations += parameters.where((param) => param.isNamed).map((param) {
             var cParam = param.type.getDisplayString(withNullability: false)
               + " " + param.name;
 
@@ -290,34 +284,63 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
 
           argListDeclarations += "}";
         }
+
+        return argListDeclarations;
+      }
         
+      String getArgListExpressions(List<ParameterElement> parameters) {
+        var argListExpressions = "";
+        
+        final numPositionalArgs = parameters
+          .fold(0,(val,param) => val + (param.isRequiredPositional ? 1 : 0));
+        final hasOptionalPositional = parameters
+          .any((param) => param.isOptionalPositional);
+        final hasNamed = parameters
+          .any((param) => param.isNamed);
+
         // Generate all argument expressions
-        argList += method.parameters.where((param) => param.isRequiredPositional).map((param) {
+        argListExpressions += parameters.where((param) => param.isRequiredPositional).map((param) {
           return param.name;
         }).join(",");
 
         if(hasOptionalPositional) {
           if(numPositionalArgs > 0) {
-            argList += ",";
+            argListExpressions += ",";
           }
 
-          argList += method.parameters.where((param) => param.isOptionalPositional).map((param) {
+          argListExpressions += parameters.where((param) => param.isOptionalPositional).map((param) {
             return param.name;
           }).join(",");
         }
         else if(hasNamed) {
           if(numPositionalArgs > 0) {
-            argList += ",";
+            argListExpressions += ",";
           }
 
-          argList += method.parameters.where((param) => param.isNamed).map((param) {
+          argListExpressions += parameters.where((param) => param.isNamed).map((param) {
             return param.name + ": " + param.name;
           }).join(",");
         }
 
+        return argListExpressions;
+      }
+
+      void forwardMethod(MethodElement method) {
+        // final library = method.session.getParsedLibraryByElement(method.library);
+        // final astNode = library.getElementDeclaration(method);
+
+        // buffer.writeln("@override");
+        // buffer.writeln(astNode.node.toSource());
+        
+        final returnTypeString = method.returnType.getDisplayString(withNullability: false);
+
+        final functionTemplates = getTemplatesString(method.typeParameters);
+        final argListDeclarations = getArgListDeclarations(method.parameters);
+        final argListExpressions = getArgListExpressions(method.parameters);
+
         buffer.writeln("@override");
         buffer.writeln("${returnTypeString} ${method.name}${functionTemplates}(${argListDeclarations}) {");
-        buffer.writeln("return super.${method.name}${functionTemplates}(${argList});");
+        buffer.writeln("return super.${method.name}${functionTemplates}(${argListExpressions});");
         buffer.writeln("}");
       }
 
