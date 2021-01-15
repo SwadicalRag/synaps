@@ -85,8 +85,8 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
           : "";
 
       buffer.write("class ${classNameIdentifier}${templateDeclarations} ");
+      buffer.write("extends ${parentClassName}${templates} ");
       buffer.write("with SynapsControllerInterface<${parentClassName}${templates}> ");
-      buffer.write("implements ${parentClassName}${templates} ");
       final hasWEC = element.mixins
           .any((mxn) => mxn.element.name == "WeakEqualityController");
       buffer.writeln("{");
@@ -229,14 +229,99 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
       }
 
       void forwardMethod(MethodElement method) {
-        final library = method.session.getParsedLibraryByElement(method.library);
-        final astNode = library.getElementDeclaration(method);
+        // final library = method.session.getParsedLibraryByElement(method.library);
+        // final astNode = library.getElementDeclaration(method);
+
+        // buffer.writeln("@override");
+        // buffer.writeln(astNode.node.toSource());
+        
+        final returnTypeString = method.returnType.getDisplayString(withNullability: false);
+        final functionTemplates = method.typeParameters.isNotEmpty ?
+          "<" + method.typeParameters.map((t) => t.name).join(",") + ">"
+            : "";
+
+        var argListDeclarations = "";
+        var argList = "";
+        
+        final numPositionalArgs = method.parameters
+          .fold(0,(val,param) => val + (param.isRequiredPositional ? 1 : 0));
+        final hasOptionalPositional = method.parameters
+          .fold(false,(val,param) => val || param.isOptionalPositional);
+        final hasNamed = method.parameters
+          .fold(false,(val,param) => val || param.isNamed);
+        
+        // Generate all argument declarations
+        argListDeclarations += method.parameters.where((param) => param.isRequiredPositional).map((param) {
+          return param.type.getDisplayString(withNullability: false)
+            + " " + param.name;
+        }).join(",");
+
+        if(hasOptionalPositional) {
+          if(numPositionalArgs > 0) {
+            argListDeclarations += ",";
+          }
+
+          argListDeclarations += "[";
+          
+          argListDeclarations += method.parameters.where((param) => param.isOptionalPositional).map((param) {
+            return param.type.getDisplayString(withNullability: false)
+              + " " + param.name;
+          }).join(",");
+
+          argListDeclarations += "]";
+        }
+        else if(hasNamed) {
+          if(numPositionalArgs > 0) {
+            argListDeclarations += ",";
+          }
+
+          argListDeclarations += "{";
+          
+          argListDeclarations += method.parameters.where((param) => param.isNamed).map((param) {
+            var cParam = param.type.getDisplayString(withNullability: false)
+              + " " + param.name;
+
+            if(param.hasRequired) {
+              cParam = "@required " + cParam;
+            }
+
+            return cParam;
+          }).join(",");
+
+          argListDeclarations += "}";
+        }
+        
+        // Generate all argument expressions
+        argList += method.parameters.where((param) => param.isRequiredPositional).map((param) {
+          return param.name;
+        }).join(",");
+
+        if(hasOptionalPositional) {
+          if(numPositionalArgs > 0) {
+            argList += ",";
+          }
+
+          argList += method.parameters.where((param) => param.isOptionalPositional).map((param) {
+            return param.name;
+          }).join(",");
+        }
+        else if(hasNamed) {
+          if(numPositionalArgs > 0) {
+            argList += ",";
+          }
+
+          argList += method.parameters.where((param) => param.isNamed).map((param) {
+            return param.name + ": " + param.name;
+          }).join(",");
+        }
 
         buffer.writeln("@override");
-        buffer.writeln(astNode.node.toSource());
+        buffer.writeln("${returnTypeString} ${method.name}${functionTemplates}(${argListDeclarations}) {");
+        buffer.writeln("return super.${method.name}${functionTemplates}(${argList});");
+        buffer.writeln("}");
       }
 
-      Set<String> seenFields = {};
+      final seenFields = <String>{};
       void recurseSubclass(ClassElement recElement,[Set<Element> seen]) {
         if(recElement.isDartCoreObject) {return;}
 
@@ -254,16 +339,16 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
           forwardField(field);
         }
 
-        for (final method in recElement.methods) {
-          // if (method.name.startsWith("_")) {continue;}
-          if (method.isStatic) {continue;}
-          if (method.isAbstract) {continue;}
-          if(hasWEC && method.isOperator && method.name == "==") {continue;}
-          if (seenFields.contains(method.name)) {continue;}
-          seenFields.add(method.name);
+        // for (final method in recElement.methods) {
+        //   // if (method.name.startsWith("_")) {continue;}
+        //   if (method.isStatic) {continue;}
+        //   if (method.isAbstract) {continue;}
+        //   if(hasWEC && method.isOperator && method.name == "==") {continue;}
+        //   if (seenFields.contains(method.name)) {continue;}
+        //   seenFields.add(method.name);
 
-          forwardMethod(method);
-        }
+        //   forwardMethod(method);
+        // }
 
         if(recElement.supertype != null) {
           if(recElement.supertype.element is ClassElement) {
