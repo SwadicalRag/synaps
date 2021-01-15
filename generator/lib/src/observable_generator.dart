@@ -340,7 +340,14 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
 
         buffer.writeln("@override");
         buffer.writeln("${returnTypeString} ${method.name}${functionTemplates}(${argListDeclarations}) {");
-        buffer.writeln("return super.${method.name}${functionTemplates}(${argListExpressions});");
+        buffer.write("return ");
+        if(method.isAbstract) {
+          buffer.write("boxedValue");
+        }
+        else {
+          buffer.write("super");
+        }
+        buffer.writeln(".${method.name}${functionTemplates}(${argListExpressions});");
         buffer.writeln("}");
       }
 
@@ -354,7 +361,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
         seen.add(recElement);
         
         for (final field in recElement.fields) {
-          // if (field.name.startsWith("_")) {continue;}
+          if (field.name.startsWith("_")) {continue;}
           if (field.isStatic) {continue;}
           if (seenFields.contains(field.name)) {continue;}
           seenFields.add(field.name);
@@ -362,16 +369,16 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
           forwardField(field);
         }
 
-        // for (final method in recElement.methods) {
-        //   // if (method.name.startsWith("_")) {continue;}
-        //   if (method.isStatic) {continue;}
-        //   if (method.isAbstract) {continue;}
-        //   if(hasWEC && method.isOperator && method.name == "==") {continue;}
-        //   if (seenFields.contains(method.name)) {continue;}
-        //   seenFields.add(method.name);
+        for (final method in recElement.methods) {
+          if (method.name.startsWith("_")) {continue;}
+          if (method.isStatic) {continue;}
+          // if (method.isAbstract) {continue;}
+          if(hasWEC && method.isOperator && method.name == "==") {continue;}
+          if (seenFields.contains(method.name)) {continue;}
+          seenFields.add(method.name);
 
-        //   forwardMethod(method);
-        // }
+          forwardMethod(method);
+        }
 
         if(recElement.supertype != null) {
           if(recElement.supertype.element is ClassElement) {
