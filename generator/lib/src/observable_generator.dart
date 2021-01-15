@@ -44,7 +44,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
   String _getControllerClassTypeString(InterfaceType interfaceType,[bool deep = false]) {
     final element = interfaceType.element;
     final parentClassName = element.displayName;
-    final classNameClean = parentClassName + "Controller";
+    final classNameClean = parentClassName;
     final classNameIdentifier = r"$" + classNameClean;
 
     var typeString = classNameIdentifier;
@@ -75,7 +75,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
       final buffer = StringBuffer();
 
       final parentClassName = element.displayName;
-      final classNameClean = parentClassName + "Controller";
+      final classNameClean = parentClassName;
       final classNameIdentifier = r"$" + classNameClean;
       final templateDeclarations = element.typeParameters.isNotEmpty ?
         "<" + element.typeParameters.map((t) => t.getDisplayString(withNullability: false)).join(",") + ">"
@@ -394,8 +394,35 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
 
       recurseSubclass(element);
 
+      if(element.unnamedConstructor != null) {
+        if(element.unnamedConstructor.parameters.isNotEmpty) {
+          throw AssertionError("""
+          [synaps_generator] A class annotated with @Controller() MUST have a
+          zero-argument unnamed constructor. If the constructor has any arguments
+          at all, it is difficult for synaps to wrap that class, as Synaps has to
+          initialise that class first.
+
+          Consider using a named constructor instead.
+          """);
+        }
+      }
+
+      for(final namedConstructor in element.constructors) {
+        if(namedConstructor.name.isNotEmpty) {
+          final functionTemplates = getTemplatesString(namedConstructor.typeParameters);
+          final argListDeclarations = getArgListDeclarations(namedConstructor.parameters);
+          final argListExpressions = getArgListExpressions(namedConstructor.parameters);
+
+          buffer.write("${classNameIdentifier}.${namedConstructor.name}${functionTemplates}(${argListDeclarations})");
+          buffer.write(" : ");
+          buffer.write("super.${namedConstructor.name}${functionTemplates}(${argListExpressions})");
+          buffer.writeln(";");
+        }
+      }
+
       buffer.write("${classNameIdentifier}(this.boxedValue)");
-      if(activateCtxOnInitialise.isNotEmpty || hasWEC) {
+      buffer.writeln(" : super()");
+      if(activateCtxOnInitialise.isNotEmpty) {
         buffer.writeln(" {");
         for(final fromVarName in activateCtxOnInitialise.keys) {
           final toVarName = activateCtxOnInitialise[fromVarName];
