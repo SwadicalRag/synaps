@@ -236,7 +236,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
         buffer.writeln(astNode.node.toSource());
       }
 
-
+      Set<String> seenFields = {};
       void recurseSubclass(ClassElement recElement,[Set<Element> seen]) {
         if(recElement.isDartCoreObject) {return;}
 
@@ -248,6 +248,8 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
         for (final field in recElement.fields) {
           // if (field.name.startsWith("_")) {continue;}
           if (field.isStatic) {continue;}
+          if (seenFields.contains(field.name)) {continue;}
+          seenFields.add(field.name);
 
           forwardField(field);
         }
@@ -255,7 +257,11 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
         for (final method in recElement.methods) {
           // if (method.name.startsWith("_")) {continue;}
           if (method.isStatic) {continue;}
+          if (method.isAbstract) {continue;}
           if(hasWEC && method.isOperator && method.name == "==") {continue;}
+          if (seenFields.contains(method.name)) {continue;}
+          seenFields.add(method.name);
+
           forwardMethod(method);
         }
 
