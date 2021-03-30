@@ -259,7 +259,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
           
           argListDeclarations += parameters.where((param) => param.isOptionalPositional).map((param) {
             return param.type.getDisplayString(withNullability: false)
-              + " " + param.name;
+              + " " + param.name + (param.hasDefaultValue ? (" = " + param.defaultValueCode) : "");
           }).join(",");
 
           argListDeclarations += "]";
