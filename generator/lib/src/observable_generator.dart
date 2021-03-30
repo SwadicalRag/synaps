@@ -158,7 +158,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
             if(!field.isFinal) {
               buffer.writeln("@override");
               buffer.writeln("set ${field.name}(${typeString} value) {");
-              buffer.writeln("${proxyName} = value.ctx();");
+              buffer.writeln("${proxyName} = value != null ? value.ctx() : null;");
               buffer.writeln("boxedValue.${field.name} = ${proxyName};");
               buffer.writeln("synapsMarkVariableDirty(#${field.name},value);");
               buffer.writeln("}");
@@ -183,8 +183,8 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
             if(!field.isFinal) {
               buffer.writeln("@override");
               buffer.writeln("set ${field.name}(${typeString} value) {");
-              buffer.writeln("${proxyName} = value.ctx();");
-              buffer.writeln("boxedValue.${field.name} = ${proxyName}.boxedValue;");
+              buffer.writeln("${proxyName} = value != null ? value.ctx() : null;");
+              buffer.writeln("boxedValue.${field.name} = value != null ? ${proxyName}.boxedValue : null;");
               buffer.writeln("synapsMarkVariableDirty(#${field.name},value);");
               buffer.writeln("}");
             }
