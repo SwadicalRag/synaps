@@ -339,8 +339,15 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
         final argListExpressions = getArgListExpressions(method.parameters);
 
         buffer.writeln("@override");
-        buffer.writeln("${returnTypeString} ${method.name}${functionTemplates}(${argListDeclarations}) {");
+        buffer.write("${returnTypeString} ${method.name}${functionTemplates}(${argListDeclarations}) ");
+        if(method.isAsynchronous) {
+          buffer.write("async ");
+        }
+        buffer.writeln("{");
         buffer.write("return ");
+        if(method.isAsynchronous) {
+          buffer.write("await ");
+        }
         if(method.isAbstract) {
           buffer.write("boxedValue");
         }
@@ -416,14 +423,19 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
 
       for(final namedConstructor in element.constructors) {
         if(namedConstructor.name.isNotEmpty) {
-          final functionTemplates = getTemplatesString(namedConstructor.typeParameters);
-          final argListDeclarations = getArgListDeclarations(namedConstructor.parameters);
-          final argListExpressions = getArgListExpressions(namedConstructor.parameters);
+          if(namedConstructor.isFactory) {
+            // i have no idea
+          }
+          else {
+            final functionTemplates = getTemplatesString(namedConstructor.typeParameters);
+            final argListDeclarations = getArgListDeclarations(namedConstructor.parameters);
+            final argListExpressions = getArgListExpressions(namedConstructor.parameters);
 
-          buffer.write("${classNameIdentifier}.${namedConstructor.name}${functionTemplates}(${argListDeclarations})");
-          buffer.write(" : ");
-          buffer.write("super.${namedConstructor.name}${functionTemplates}(${argListExpressions})");
-          buffer.writeln(";");
+            buffer.write("${classNameIdentifier}.${namedConstructor.name}${functionTemplates}(${argListDeclarations})");
+            buffer.write(" : ");
+            buffer.write("super.${namedConstructor.name}${functionTemplates}(${argListExpressions})");
+            buffer.writeln(";");
+          }
         }
       }
 
