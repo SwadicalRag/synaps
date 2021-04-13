@@ -42,5 +42,4 @@ extension SynapsListExtension<T> on List<T> {
   }
 
   SynapsList<T> ctx() => asController();
-  List<T> get boxedValue => this;
 }

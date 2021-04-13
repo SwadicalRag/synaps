@@ -92,5 +92,4 @@ extension SynapsSetExtension<T> on Set<T> {
   }
 
   SynapsSet<T> ctx() => asController();
-  Set<T> get boxedValue => this;
 }

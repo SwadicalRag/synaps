@@ -105,5 +105,4 @@ extension SynapsMapExtension<K,V> on Map<K,V> {
   }
 
   SynapsMap<K,V> ctx() => asController();
-  Map<K,V> get boxedValue => this;
 }
