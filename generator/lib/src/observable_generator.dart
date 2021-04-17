@@ -215,14 +215,14 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
           if(field.getter != null) {
             buffer.writeln("@override");
             buffer.writeln("${typeString} get ${field.name} {");
-            buffer.writeln("return boxedValue.${field.name};");
+            buffer.writeln("return super.${field.name};");
             buffer.writeln("}");
           }
 
           if(!field.isFinal) {
             buffer.writeln("@override");
             buffer.writeln("set ${field.name}(${typeString} value) {");
-            buffer.writeln("boxedValue.${field.name} = value;");
+            buffer.writeln("super.${field.name} = value;");
             buffer.writeln("}");
           }
         }
