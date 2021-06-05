@@ -6,7 +6,7 @@ class SynapsSetIterator<T> extends Iterator<T> {
   final SynapsSet<T> _synapsSet;
   final Set<T> _internalSet;
   
-  Iterator<T> boxedValue;
+  late Iterator<T> boxedValue;
 
   SynapsSetIterator(this._synapsSet,this._internalSet) {
     boxedValue = _internalSet.iterator;
@@ -37,7 +37,7 @@ class SynapsSet<T> extends SetMixin<T> with SynapsControllerInterface<Set<T>> {
   SynapsSet([this.boxedValue = const {}]);
 
   @override
-  bool contains(Object value) {
+  bool contains(Object? value) {
     synapsMarkVariableRead(value);
     return boxedValue.contains(value);
   }
@@ -53,13 +53,13 @@ class SynapsSet<T> extends SetMixin<T> with SynapsControllerInterface<Set<T>> {
   }
 
   @override
-  T lookup(Object value) {
+  T? lookup(Object? value) {
     synapsMarkVariableRead(value);
     return boxedValue.lookup(value);
   }
 
   @override
-  bool remove(Object value) {
+  bool remove(Object? value) {
     final changed = boxedValue.remove(value);
     if(changed) {
       synapsMarkVariableDirty(value,SynapsControllerInterface.NULL_ORACLE,true);
@@ -87,7 +87,7 @@ class SynapsSet<T> extends SetMixin<T> with SynapsControllerInterface<Set<T>> {
 
 extension SynapsSetExtension<T> on Set<T> {
   SynapsSet<T> asController() {
-    if (this is SynapsSet<T>) return this;
+    if (this is SynapsSet<T>) return this as SynapsSet<T>;
     return SynapsSet<T>(this);
   }
 

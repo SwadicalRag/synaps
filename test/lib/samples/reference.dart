@@ -6,11 +6,11 @@ part "reference.g.dart";
 @Controller()
 class ReferenceTest {
   @Observable()
-  Hello world;
+  Hello? world;
   
   @Observable()
-  String somethingElse;
+  String? somethingElse;
 
   @Observable()
-  Set<Hello> greetingz;
+  Set<Hello>? greetingz;
 }

@@ -1,5 +1,6 @@
 import "package:analyzer/dart/constant/value.dart";
 import "package:analyzer/dart/element/element.dart";
+import "package:analyzer/dart/element/nullability_suffix.dart";
 import "package:analyzer/dart/element/type.dart";
 import "package:source_gen/source_gen.dart";
 import "package:build/build.dart";
@@ -16,17 +17,17 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
     }
   }
 
-  Map<Type,DartObject> getFieldAnnotations(Element element,[Map<Type,DartObject> out]) {
+  Map<Type,DartObject> getFieldAnnotations(Element element,[Map<Type,DartObject>? out]) {
     out ??= {};
 
     _checkAnnotationInternal<Observable>(element, out);
     if(element is FieldElement) {
       if(element.getter != null) {
-        getFieldAnnotations(element.getter, out);
+        getFieldAnnotations(element.getter!, out);
       }
       
       if(element.setter != null) {
-        getFieldAnnotations(element.setter, out);
+        getFieldAnnotations(element.setter!, out);
       }
     }
 
@@ -34,7 +35,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
   }
 
   bool _isControllerClass(DartType type) {
-    final element = type.element;
+    final element = type.element!;
     final annotations =
         TypeChecker.fromRuntime(Controller).annotationsOf(element);
     
@@ -53,15 +54,21 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
       final templateList = <String>[];
       for(final fieldTypeArgument in interfaceType.typeArguments) {
         if(deep && _isControllerClass(fieldTypeArgument)) {
-          templateList.add(_getControllerClassTypeString(fieldTypeArgument));
+          templateList.add(_getControllerClassTypeString(fieldTypeArgument as InterfaceType));
         }
         else {
-          templateList.add(fieldTypeArgument.getDisplayString(withNullability: false));
+          templateList.add(fieldTypeArgument.getDisplayString(withNullability: true));
         }
       }
       typeString += "<";
       typeString += templateList.join(",");
       typeString += ">";
+    }
+    if(interfaceType.nullabilitySuffix == NullabilitySuffix.question) {
+      typeString += "?";
+    }
+    else if(interfaceType.nullabilitySuffix == NullabilitySuffix.star) {
+      typeString += "*";
     }
 
     return typeString;
@@ -78,7 +85,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
       final classNameClean = parentClassName;
       final classNameIdentifier = r"$" + classNameClean;
       final templateDeclarations = element.typeParameters.isNotEmpty ?
-        "<" + element.typeParameters.map((t) => t.getDisplayString(withNullability: false)).join(",") + ">"
+        "<" + element.typeParameters.map((t) => t.getDisplayString(withNullability: true)).join(",") + ">"
           : "";
       final templates = element.typeParameters.isNotEmpty ?
         "<" + element.typeParameters.map((t) => t.name).join(",") + ">"
@@ -94,6 +101,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
       buffer.writeln("final ${parentClassName}${templates} boxedValue;");
 
       final activateCtxOnInitialise = <String,String>{};
+      final activateCtxOnInitialiseNullability = <String,NullabilitySuffix>{};
 
       void forwardField(FieldElement field) {
         final fieldAnnotations = getFieldAnnotations(field);
@@ -111,7 +119,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
 
           if(field.type.isDartCoreList || field.type.isDartCoreSet || field.type.isDartCoreMap) {
             final proxyName = "_proxy_${field.name}";
-            final typeString = field.type.getDisplayString(withNullability: false);
+            final typeString = field.type.getDisplayString(withNullability: true);
             var boxedTypeString = typeString;
             if(field.type.isDartCoreList) {
               boxedTypeString = "List";
@@ -129,10 +137,10 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
                 final templateList = <String>[];
                 for(final fieldTypeArgument in fieldTypeArguments) {
                   if(_isControllerClass(fieldTypeArgument)) {
-                    templateList.add(_getControllerClassTypeString(fieldTypeArgument));
+                    templateList.add(_getControllerClassTypeString(fieldTypeArgument as InterfaceType));
                   }
                   else {
-                    templateList.add(fieldTypeArgument.getDisplayString(withNullability: false));
+                    templateList.add(fieldTypeArgument.getDisplayString(withNullability: true));
                   }
                 }
                 boxedTypeString += "<";
@@ -140,14 +148,21 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
                 boxedTypeString += ">";
               }
             }
+            if(field.type.nullabilitySuffix == NullabilitySuffix.question) {
+              boxedTypeString += "?";
+            }
+            else if(field.type.nullabilitySuffix == NullabilitySuffix.star) {
+              boxedTypeString += "*";
+            }
 
             final proxyTypeString = "Synaps" + typeString;
             final boxedProxyTypeString = "Synaps" + boxedTypeString;
 
             activateCtxOnInitialise[field.name] = proxyName;
+            activateCtxOnInitialiseNullability[field.name] = field.type.nullabilitySuffix;
 
             if(field.getter != null) {
-              buffer.writeln("${proxyTypeString} ${proxyName};");
+              buffer.writeln("late ${proxyTypeString} ${proxyName};");
               buffer.writeln("@override");
               buffer.writeln("${proxyTypeString} get ${field.name} {");
               buffer.writeln("synapsMarkVariableRead(#${field.name});");
@@ -158,7 +173,12 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
             if(!field.isFinal) {
               buffer.writeln("@override");
               buffer.writeln("set ${field.name}(${typeString} value) {");
-              buffer.writeln("${proxyName} = value != null ? value.ctx() : null;");
+              if(field.type.nullabilitySuffix == NullabilitySuffix.none) {
+                buffer.writeln("${proxyName} = value.ctx();");
+              }
+              else {
+                buffer.writeln("${proxyName} = value?.ctx();");
+              }
               buffer.writeln("boxedValue.${field.name} = ${proxyName};");
               buffer.writeln("synapsMarkVariableDirty(#${field.name},value);");
               buffer.writeln("}");
@@ -166,13 +186,14 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
           }
           else if(_isControllerClass(field.type)) {
             final proxyName = "_proxy_${field.name}";
-            final typeString = field.type.getDisplayString(withNullability: false);
-            final boxedTypeString = _getControllerClassTypeString(field.type);
+            final typeString = field.type.getDisplayString(withNullability: true);
+            final boxedTypeString = _getControllerClassTypeString(field.type as InterfaceType);
 
             activateCtxOnInitialise[field.name] = proxyName;
+            activateCtxOnInitialiseNullability[field.name] = field.type.nullabilitySuffix;
 
             if(field.getter != null) {
-              buffer.writeln("${boxedTypeString} ${proxyName};");
+              buffer.writeln("late ${boxedTypeString} ${proxyName};");
               buffer.writeln("@override");
               buffer.writeln("${boxedTypeString} get ${field.name} {");
               buffer.writeln("synapsMarkVariableRead(#${field.name});");
@@ -183,14 +204,20 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
             if(!field.isFinal) {
               buffer.writeln("@override");
               buffer.writeln("set ${field.name}(${typeString} value) {");
-              buffer.writeln("${proxyName} = value != null ? value.ctx() : null;");
-              buffer.writeln("boxedValue.${field.name} = value != null ? ${proxyName}.boxedValue : null;");
+              if(field.type.nullabilitySuffix == NullabilitySuffix.none) {
+                buffer.writeln("${proxyName} = value.ctx();");
+                buffer.writeln("boxedValue.${field.name} = ${proxyName}.boxedValue;");
+              }
+              else {
+                buffer.writeln("${proxyName} = value?.ctx();");
+                buffer.writeln("boxedValue.${field.name} = ${proxyName}?.boxedValue;");
+              }
               buffer.writeln("synapsMarkVariableDirty(#${field.name},value);");
               buffer.writeln("}");
             }
           }
           else {
-            final typeString = field.type.getDisplayString(withNullability: false);
+            final typeString = field.type.getDisplayString(withNullability: true);
 
             if(field.getter != null) {
               buffer.writeln("@override");
@@ -210,7 +237,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
           }
         }
         else {
-          final typeString = field.type.getDisplayString(withNullability: false);
+          final typeString = field.type.getDisplayString(withNullability: true);
 
           if(field.getter != null) {
             buffer.writeln("@override");
@@ -238,7 +265,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
         var argListDeclarations = "";
         
         final numPositionalArgs = parameters
-          .fold(0,(val,param) => val + (param.isRequiredPositional ? 1 : 0));
+          .fold(0,(dynamic val,param) => val + (param.isRequiredPositional ? 1 : 0));
         final hasOptionalPositional = parameters
           .any((param) => param.isOptionalPositional);
         final hasNamed = parameters
@@ -246,7 +273,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
         
         // Generate all argument declarations
         argListDeclarations += parameters.where((param) => param.isRequiredPositional).map((param) {
-          return param.type.getDisplayString(withNullability: false)
+          return param.type.getDisplayString(withNullability: true)
             + " " + param.name;
         }).join(",");
 
@@ -258,8 +285,8 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
           argListDeclarations += "[";
           
           argListDeclarations += parameters.where((param) => param.isOptionalPositional).map((param) {
-            return param.type.getDisplayString(withNullability: false)
-              + " " + param.name + (param.hasDefaultValue ? (" = " + param.defaultValueCode) : "");
+            return param.type.getDisplayString(withNullability: true)
+              + " " + param.name + (param.hasDefaultValue ? (" = " + param.defaultValueCode!) : "");
           }).join(",");
 
           argListDeclarations += "]";
@@ -272,7 +299,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
           argListDeclarations += "{";
           
           argListDeclarations += parameters.where((param) => param.isNamed).map((param) {
-            var cParam = param.type.getDisplayString(withNullability: false)
+            var cParam = param.type.getDisplayString(withNullability: true)
               + " " + param.name;
 
             if(param.hasRequired) {
@@ -292,7 +319,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
         var argListExpressions = "";
         
         final numPositionalArgs = parameters
-          .fold(0,(val,param) => val + (param.isRequiredPositional ? 1 : 0));
+          .fold(0,(dynamic val,param) => val + (param.isRequiredPositional ? 1 : 0));
         final hasOptionalPositional = parameters
           .any((param) => param.isOptionalPositional);
         final hasNamed = parameters
@@ -332,7 +359,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
         // buffer.writeln("@override");
         // buffer.writeln(astNode.node.toSource());
         
-        final returnTypeString = method.returnType.getDisplayString(withNullability: false);
+        final returnTypeString = method.returnType.getDisplayString(withNullability: true);
 
         final functionTemplates = getTemplatesString(method.typeParameters);
         final argListDeclarations = getArgListDeclarations(method.parameters);
@@ -359,7 +386,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
       }
 
       final seenFields = <String>{};
-      void recurseSubclass(ClassElement recElement,[Set<Element> seen]) {
+      void recurseSubclass(ClassElement recElement,[Set<Element>? seen]) {
         if(recElement.isDartCoreObject) {return;}
 
         seen ??= {};
@@ -388,8 +415,8 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
         }
 
         if(recElement.supertype != null) {
-          if(recElement.supertype.element is ClassElement) {
-            recurseSubclass(recElement.supertype.element,seen);
+          if(recElement.supertype!.element is ClassElement) {
+            recurseSubclass(recElement.supertype!.element,seen);
           }
         }
 
@@ -409,7 +436,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
       recurseSubclass(element);
 
       if(element.unnamedConstructor != null) {
-        if(element.unnamedConstructor.parameters.isNotEmpty) {
+        if(element.unnamedConstructor!.parameters.isNotEmpty) {
           throw AssertionError("""
           [synaps_generator] A class annotated with @Controller() MUST have a
           zero-argument unnamed constructor. If the constructor has any arguments
@@ -446,7 +473,12 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
         for(final fromVarName in activateCtxOnInitialise.keys) {
           final toVarName = activateCtxOnInitialise[fromVarName];
 
-          buffer.writeln("${toVarName} = boxedValue.${fromVarName} != null ? boxedValue.${fromVarName}.ctx() : null;");
+          if(activateCtxOnInitialiseNullability[fromVarName] == NullabilitySuffix.none) {
+            buffer.writeln("${toVarName} = boxedValue.${fromVarName}.ctx();");
+          }
+          else {
+            buffer.writeln("${toVarName} = boxedValue.${fromVarName}?.ctx();");
+          }
         }
         buffer.writeln("}");
       }
@@ -480,7 +512,7 @@ class ObservableGenerator extends GeneratorForAnnotation<Controller> {
 
       buffer.writeln("extension ${classNameClean}Extension${templateDeclarations} on ${parentClassName}${templates} {");
       buffer.writeln("${classNameIdentifier}${templates} asController() {");
-      buffer.writeln("if(this is ${classNameIdentifier}) return this;");
+      buffer.writeln("if(this is ${classNameIdentifier}) return this as ${classNameIdentifier};");
       buffer.writeln("return ${classNameIdentifier}${templates}(this);");
       buffer.writeln("}");
       buffer.writeln("${classNameIdentifier}${templates} ctx() => asController();");

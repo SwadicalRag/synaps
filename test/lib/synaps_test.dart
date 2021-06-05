@@ -302,7 +302,7 @@ void main() {
 
           var out = 0;
           listTest.numberwang.forEach((element) {
-            out = out + element;
+            out = out + element!;
           });
 
           isNumberwang = out == 42;
@@ -419,11 +419,11 @@ void main() {
 
       expect(didUpdate,equals(0));
 
-      mapTest.ecgWaves["P"] += " following SA node activation";
+      mapTest.ecgWaves["P"] = mapTest.ecgWaves["P"]! + " following SA node activation";
 
       expect(didUpdate,equals(1));
 
-      mapTest.ecgWaves["delta"] += " commonly associated with WPW";
+      mapTest.ecgWaves["delta"] = mapTest.ecgWaves["delta"]! + " commonly associated with WPW";
 
       expect(didUpdate,equals(1));
     });
@@ -475,7 +475,7 @@ void main() {
 
       expect(didUpdate,equals(1));
 
-      refTest.world.world = "boing";
+      refTest.world!.world = "boing";
 
       expect(didUpdate,equals(1));
     });
@@ -489,7 +489,7 @@ void main() {
       Synaps.monitor(
         capture: () {
           var stub = refTest.world;
-          var stub2 = refTest.world.world;
+          var stub2 = refTest.world!.world;
         },
         onUpdate: () {
           didUpdate++;
@@ -498,7 +498,7 @@ void main() {
 
       expect(didUpdate,equals(0));
 
-      refTest.world.world = "boing";
+      refTest.world!.world = "boing";
 
       expect(didUpdate,equals(1));
     });

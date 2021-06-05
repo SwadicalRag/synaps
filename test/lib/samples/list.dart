@@ -5,5 +5,5 @@ part "list.g.dart";
 @Controller()
 class ListTest {
   @Observable()
-  List<int> numberwang = [2,5,3];
+  List<int?> numberwang = [2,5,3];
 }

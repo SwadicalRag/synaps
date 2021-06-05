@@ -6,7 +6,7 @@ class SynapsMapKeysIterator<K,V> extends Iterator<K> {
   final SynapsMap<K,V> _synapsMap;
   final Map<K,V> _internalMap;
   
-  Iterator<K> boxedValue;
+  late Iterator<K> boxedValue;
 
   SynapsMapKeysIterator(this._synapsMap,this._internalMap) {
     boxedValue = _internalMap.keys.iterator;
@@ -41,7 +41,7 @@ class SynapsMapKeysIterable<K,V> extends Iterable<K> {
 }
 
 class SynapsMap<K,V> extends MapMixin<K,V> with SynapsControllerInterface<Map<K,V>> {
-  Iterable<K> _keysInternal;
+  late Iterable<K> _keysInternal;
 
   @override
   final Map<K,V> boxedValue;
@@ -51,9 +51,9 @@ class SynapsMap<K,V> extends MapMixin<K,V> with SynapsControllerInterface<Map<K,
   }
 
   @override
-  V operator [](Object index) {
+  V? operator [](Object? index) {
     synapsMarkVariableRead(index);
-    return boxedValue[index];
+    return boxedValue[index as K];
   }
 
   @override
@@ -75,7 +75,7 @@ class SynapsMap<K,V> extends MapMixin<K,V> with SynapsControllerInterface<Map<K,
   }
 
   @override
-  V remove(Object key) {
+  V? remove(Object? key) {
     final removed = boxedValue.remove(key);
     if(removed != null) {
       synapsMarkVariableDirty(key,SynapsControllerInterface.NULL_ORACLE,true);
@@ -100,7 +100,7 @@ class SynapsMap<K,V> extends MapMixin<K,V> with SynapsControllerInterface<Map<K,
 
 extension SynapsMapExtension<K,V> on Map<K,V> {
   SynapsMap<K,V> asController() {
-    if (this is SynapsMap<K,V>) return this;
+    if (this is SynapsMap<K,V>) return this as SynapsMap<K, V>;
     return SynapsMap<K,V>(this);
   }
 

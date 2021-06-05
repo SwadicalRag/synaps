@@ -2,20 +2,20 @@ import "dart:collection";
 
 import "package:synaps/synaps.dart";
 
-class SynapsList<T> extends ListMixin<T> with SynapsControllerInterface {
+class SynapsList<T> extends ListMixin<T?> with SynapsControllerInterface {
   @override
-  final List<T> boxedValue;
+  final List<T?> boxedValue;
 
   SynapsList([this.boxedValue = const []]);
 
   @override
-  T operator [](int index) {
+  T? operator [](int index) {
     synapsMarkVariableRead(index);
     return boxedValue[index];
   }
 
   @override
-  void operator []=(int index,T value) {
+  void operator []=(int index,T? value) {
     boxedValue[index] = value;
     synapsMarkVariableDirty(index,value);
   }
@@ -37,7 +37,7 @@ class SynapsList<T> extends ListMixin<T> with SynapsControllerInterface {
 
 extension SynapsListExtension<T> on List<T> {
   SynapsList<T> asController() {
-    if (this is SynapsList<T>) return this;
+    if (this is SynapsList<T>) return this as SynapsList<T>;
     return SynapsList<T>(this);
   }
 

@@ -1,7 +1,7 @@
 import "package:meta/meta.dart";
 import "package:synaps/synaps.dart";
 
-typedef void SynapsListenerFunction<T>(T newValue);
+typedef void SynapsListenerFunction<T>(T? newValue);
 typedef void SynapsRunOnceListenerFunction();
 
 /// An interface to the "Oracle", which is a unique class representing
@@ -162,7 +162,7 @@ abstract class SynapsControllerInterface<T> {
       _symbolListeners[symbol] = {};
     }
 
-    _symbolListeners[symbol].add(listener);
+    _symbolListeners[symbol]!.add(listener as void Function(dynamic));
   }
 
   /// Removes a listener from this controller.
@@ -173,9 +173,9 @@ abstract class SynapsControllerInterface<T> {
       return;
     }
 
-    _symbolListeners[symbol].remove(listener);
+    _symbolListeners[symbol]!.remove(listener);
 
-    if(_symbolListeners[symbol].isEmpty) {
+    if(_symbolListeners[symbol]!.isEmpty) {
       _symbolListeners.remove(symbol);
     }
   }
@@ -191,7 +191,7 @@ abstract class SynapsControllerInterface<T> {
       _symbolRunOnceListeners[symbol] = {};
     }
 
-    _symbolRunOnceListeners[symbol].add(listener);
+    _symbolRunOnceListeners[symbol]!.add(listener);
   }
 
   /// Adds a runOnce listener to this controller.
@@ -202,9 +202,9 @@ abstract class SynapsControllerInterface<T> {
       return;
     }
 
-    _symbolRunOnceListeners[symbol].remove(listener);
+    _symbolRunOnceListeners[symbol]!.remove(listener);
 
-    if(_symbolRunOnceListeners[symbol].isEmpty) {
+    if(_symbolRunOnceListeners[symbol]!.isEmpty) {
       _symbolRunOnceListeners.remove(symbol);
     }
   }
@@ -224,7 +224,7 @@ abstract class SynapsControllerInterface<T> {
       for(final symbol in _dirtySymbols.keys) {
         if(_symbolRunOnceListeners[symbol] == null) {continue;}
 
-        final listeners = _symbolRunOnceListeners[symbol];
+        final listeners = _symbolRunOnceListeners[symbol]!;
 
         for(final listener in listeners) {
           if(!seenRunOnceListeners.contains(listener)) {
@@ -238,7 +238,7 @@ abstract class SynapsControllerInterface<T> {
       for(final symbol in _dirtySymbols.keys) {
         if(_symbolListeners[symbol] == null) {continue;}
 
-        final listeners = _symbolListeners[symbol];
+        final listeners = _symbolListeners[symbol]!;
 
         final newValue = _dirtySymbols[symbol];
         for(final listener in listeners) {

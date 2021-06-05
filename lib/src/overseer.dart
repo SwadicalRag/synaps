@@ -59,11 +59,11 @@ class SynapsMonitorState {
     if(!_listeners.containsKey(interface)) {
       _listeners[interface] = {};
     }
-    if(!_listeners[interface].containsKey(symbol)) {
-      _listeners[interface][symbol] = {};
+    if(!_listeners[interface]!.containsKey(symbol)) {
+      _listeners[interface]![symbol] = {};
     }
 
-    _listeners[interface][symbol].add(listener);
+    _listeners[interface]![symbol]!.add(listener as void Function(dynamic));
     interface.synapsAddListener(symbol, listener);
     hasCapturedSymbols = true;
   }
@@ -83,8 +83,8 @@ class SynapsMonitorState {
   /// ```
   void removeListener<T>(SynapsControllerInterface interface,dynamic symbol,SynapsListenerFunction<T> listener) {
     if(_listeners.containsKey(interface)) {
-      if(_listeners[interface].containsKey(symbol)) {
-        _listeners[interface][symbol].remove(listener);
+      if(_listeners[interface]!.containsKey(symbol)) {
+        _listeners[interface]![symbol]!.remove(listener);
       }
     }
 
@@ -116,11 +116,11 @@ class SynapsMonitorState {
     if(!_runOnceListeners.containsKey(interface)) {
       _runOnceListeners[interface] = {};
     }
-    if(!_runOnceListeners[interface].containsKey(symbol)) {
-      _runOnceListeners[interface][symbol] = {};
+    if(!_runOnceListeners[interface]!.containsKey(symbol)) {
+      _runOnceListeners[interface]![symbol] = {};
     }
 
-    _runOnceListeners[interface][symbol].add(listener);
+    _runOnceListeners[interface]![symbol]!.add(listener);
     interface.synapsAddRunOnceListener(symbol, listener);
     hasCapturedSymbols = true;
   }
@@ -140,8 +140,8 @@ class SynapsMonitorState {
   /// ```
   void removeRunOnceListener(SynapsControllerInterface interface,dynamic symbol,SynapsRunOnceListenerFunction listener) {
     if(_runOnceListeners.containsKey(interface)) {
-      if(_runOnceListeners[interface].containsKey(symbol)) {
-        _runOnceListeners[interface][symbol].remove(listener);
+      if(_runOnceListeners[interface]!.containsKey(symbol)) {
+        _runOnceListeners[interface]![symbol]!.remove(listener);
       }
     }
 
@@ -151,9 +151,9 @@ class SynapsMonitorState {
   /// Removes all listeners registered in this SynapsMonitorState
   void removeAllListeners() {
     for(final interface in _listeners.keys) {
-      final symbolMap = _listeners[interface];
+      final symbolMap = _listeners[interface]!;
       for(final symbol in symbolMap.keys) {
-        final listeners = symbolMap[symbol];
+        final listeners = symbolMap[symbol]!;
 
         for(final listener in listeners) {
           interface.synapsRemoveListener(symbol, listener);
@@ -167,9 +167,9 @@ class SynapsMonitorState {
   /// Removes all runOnceListeners registered in this SynapsMonitorState
   void removeAllRunOnceListeners() {
     for(final interface in _runOnceListeners.keys) {
-      final symbolMap = _runOnceListeners[interface];
+      final symbolMap = _runOnceListeners[interface]!;
       for(final symbol in symbolMap.keys) {
-        final listeners = symbolMap[symbol];
+        final listeners = symbolMap[symbol]!;
 
         for(final listener in listeners) {
           interface.synapsRemoveRunOnceListener(symbol, listener);
@@ -246,7 +246,7 @@ class Synaps {
         _recorderState.internalState[interface] = {};
       }
 
-      _recorderState.internalState[interface].add(symbol);
+      _recorderState.internalState[interface]!.add(symbol);
     }
   }
 
@@ -300,7 +300,7 @@ class Synaps {
       _playbackState.internalState[interface] = {};
     }
 
-    _playbackState.internalState[interface].add(symbol);
+    _playbackState.internalState[interface]!.add(symbol);
     if(isLive && !noPlayback) {
       doPlayback();
     }
@@ -392,7 +392,7 @@ class Synaps {
   /// i.e. if three variables are updated in a single transaction, then `onUpdate` will
   /// be called three times, once for each variable
   /// 
-  static SynapsMonitorState monitorGranular({@required SynapsMonitorFunction capture,@required SynapsMonitorGranularCallbackFunction onUpdate}) {
+  static SynapsMonitorState monitorGranular({required SynapsMonitorFunction capture,required SynapsMonitorGranularCallbackFunction onUpdate}) {
     final state = SynapsMonitorState();
 
     startRecording(SynapsRecorderMode.RECORD);
@@ -401,10 +401,10 @@ class Synaps {
       capture();
 
       for(final interface in _recorderState.internalState.keys) {
-        final symbols = _recorderState.internalState[interface];
+        final symbols = _recorderState.internalState[interface]!;
 
         for(final symbol in symbols) {
-          state.addListener(interface, symbol, (newValue) {
+          state.addListener(interface, symbol, (dynamic newValue) {
             onUpdate(interface, symbol, newValue);
           });
         }
@@ -428,7 +428,7 @@ class Synaps {
   /// i.e. if three variables are updated in a single transaction, then `onUpdate` will
   /// be called once
   /// 
-  static SynapsMonitorState monitor({@required SynapsMonitorFunction capture,@required SynapsMonitorCallbackFunction onUpdate}) {
+  static SynapsMonitorState monitor({required SynapsMonitorFunction capture,required SynapsMonitorCallbackFunction onUpdate}) {
     final state = SynapsMonitorState();
 
     startRecording(SynapsRecorderMode.RECORD);
@@ -437,7 +437,7 @@ class Synaps {
       capture();
 
       for(final interface in _recorderState.internalState.keys) {
-        final symbols = _recorderState.internalState[interface];
+        final symbols = _recorderState.internalState[interface]!;
 
         for(final symbol in symbols) {
           state.addRunOnceListener(interface, symbol, onUpdate);

@@ -38,12 +38,12 @@ class Rx extends StatefulWidget {
 }
 
 class RxState extends State<Rx> {
-  SynapsMonitorState _monitorState;
+  SynapsMonitorState? _monitorState;
 
   @override
   dispose() {
     if(_monitorState != null) {
-      _monitorState.dispose();
+      _monitorState!.dispose();
       _monitorState = null;
     }
     super.dispose();
@@ -51,11 +51,11 @@ class RxState extends State<Rx> {
 
   Widget build(BuildContext context) {
     if(_monitorState != null) {
-      _monitorState.dispose();
+      _monitorState!.dispose();
       _monitorState = null;
     }
 
-    Widget out;
+    late Widget out;
 
     _monitorState = Synaps.monitor(
       capture: () {
@@ -69,7 +69,7 @@ class RxState extends State<Rx> {
       }
     );
 
-    if(!_monitorState.hasCapturedSymbols) {
+    if(!_monitorState!.hasCapturedSymbols) {
       throw """
       [synaps_flutter] No observable variables were detected directly inside this widget.
       Several common issues that lead to this error include:
@@ -105,13 +105,13 @@ class RxCustomPaint extends CustomPaint {
 
   RxCustomPaint({
     this.allowEmptyCaptures = false,
-    Key key,
-    CustomPainter painter,
-    CustomPainter foregroundPainter,
+    Key? key,
+    CustomPainter? painter,
+    CustomPainter? foregroundPainter,
     size = Size.zero,
     isComplex = false,
     willChange = false,
-    Widget child,
+    Widget? child,
   }) : super(
     key: key,
     painter: painter,
@@ -136,17 +136,17 @@ class RxCustomPaint extends CustomPaint {
 }
 
 class _RxRenderCustomPaint extends RenderCustomPaint {
-  SynapsMonitorState _monitorState;
-  final bool allowEmptyCaptures;
+  SynapsMonitorState? _monitorState;
+  final bool? allowEmptyCaptures;
 
   _RxRenderCustomPaint({
     this.allowEmptyCaptures,
-    CustomPainter painter,
-    CustomPainter foregroundPainter,
+    CustomPainter? painter,
+    CustomPainter? foregroundPainter,
     preferredSize = Size.zero,
     isComplex = false,
     willChange = false,
-    RenderBox child,
+    RenderBox? child,
   }) : super(
     painter: painter,
     foregroundPainter: foregroundPainter,
@@ -160,7 +160,7 @@ class _RxRenderCustomPaint extends RenderCustomPaint {
   void detach() {
     super.detach();
     if(_monitorState != null) {
-      _monitorState.dispose();
+      _monitorState!.dispose();
       _monitorState = null;
     }
   }
@@ -168,7 +168,7 @@ class _RxRenderCustomPaint extends RenderCustomPaint {
   @override
   void paint(PaintingContext context, Offset offset) {
     if(_monitorState != null) {
-      _monitorState.dispose();
+      _monitorState!.dispose();
       _monitorState = null;
     }
 
@@ -183,7 +183,7 @@ class _RxRenderCustomPaint extends RenderCustomPaint {
       }
     );
 
-    if(!_monitorState.hasCapturedSymbols && (allowEmptyCaptures != true)) {
+    if(!_monitorState!.hasCapturedSymbols && (allowEmptyCaptures != true)) {
       throw """
       [synaps_flutter] No observable variables were detected directly inside this CustomPainter.
       Several common issues that lead to this error include:
